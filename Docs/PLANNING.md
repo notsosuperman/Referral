@@ -360,26 +360,26 @@ return
 - [x] Create `Docs/` directory with PLANNING.md
 
 ### Phase 2: CoordHelper Tool
-- [ ] Create `Tools/CoordHelper.ahk`
-- [ ] Implement form script parsing (control names, types, dropdown options)
-- [ ] Implement coordinate capture UI (tooltips, click detection)
-- [ ] Implement INI file writing
+- [x] Create `Tools/CoordHelper.ahk`
+- [x] Implement form script parsing (control names, types, dropdown options)
+- [x] Implement coordinate capture UI (tooltips, click detection)
+- [x] Implement INI file writing
 
 ### Phase 3: FormTransfer Library
-- [ ] Create `Lib/FormTransfer.ahk`
-- [ ] Implement `LoadMappings()` - INI parsing
-- [ ] Implement `ClickAtClient()` - coordinate translation
-- [ ] Implement `FormTransfer()` - main transfer logic
-- [ ] Handle all control types (checkbox, textfield, multiline, dropdown)
+- [x] Create `Lib/FormTransfer.ahk`
+- [x] Implement `LoadMappings()` - INI parsing
+- [x] Use `CoordMode, Mouse, Client` for coordinate handling
+- [x] Implement `FormTransfer()` - main transfer logic
+- [x] Handle all control types (checkbox, textfield, multiline, dropdown)
 
 ### Phase 4: Form Integration
-- [ ] Update `HillsboroOMFS.ahk` to call FormTransfer on submit
-- [ ] Update `NorthwestPerio.ahk` to call FormTransfer on submit
+- [x] Update `HillsboroOMFS.ahk` to call FormTransfer on submit
+- [x] Update `NorthwestPerio.ahk` to call FormTransfer on submit
 - [ ] Test end-to-end with real Open Dental
 
 ### Phase 5: Launcher
-- [ ] Create `Launcher.ahk` with specialist buttons
-- [ ] Style and polish
+- [x] Create `Launcher.ahk` with specialist buttons
+- [x] Launcher exits after launching form
 
 ### Phase 6: Testing & Tuning
 - [ ] Run CoordHelper for each form

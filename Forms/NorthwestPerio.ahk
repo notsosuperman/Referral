@@ -8,6 +8,9 @@
 #SingleInstance, Force
 SetWorkingDir %A_ScriptDir%
 
+; Include FormTransfer library
+#Include %A_ScriptDir%\..\Lib\FormTransfer.ahk
+
 ; ==============================================================================
 ; Global Variables for Form Data
 ; ==============================================================================
@@ -206,47 +209,17 @@ BtnSubmit:
         return
     }
     
-    ; Build summary of selected treatments
-    treatments := ""
-    if (chkImplantTreatment)
-        treatments .= "Implant Treatment, "
-    if (chkPeriodontalTreatment)
-        treatments .= "Periodontal Treatment, "
-    if (chkRecessionTreatment)
-        treatments .= "Recession Treatment, "
-    if (chkCrownLengthening)
-        treatments .= "Crown Lengthening, "
+    ; Get form data
+    formData := GetFormData()
     
-    ; Remove trailing comma
-    treatments := RTrim(treatments, ", ")
+    ; Hide form during transfer
+    Gui, Main:Hide
     
-    ; Radiographs status
-    radiographs := ""
-    if (chkRadiographsYes)
-        radiographs := "Yes"
-    else if (chkRadiographsNo)
-        radiographs := "No"
-    else
-        radiographs := "Not specified"
+    ; Transfer to Open Dental
+    FormTransfer("NorthwestPerio", formData)
     
-    radiographMethod := ""
-    if (chkWillSend)
-        radiographMethod := "Will Send"
-    else if (chkPatientWillBring)
-        radiographMethod := "Patient Will Bring"
-    
-    ; Build summary message
-    summary := "REFERRAL SUMMARY`n"
-    summary .= "================`n`n"
-    summary .= "Referring To: Dr. Patrick Corning`n"
-    summary .= "Referring Dentist: " . ReferralSource . "`n`n"
-    summary .= "TREATMENTS: " . (treatments != "" ? treatments : "None") . "`n`n"
-    summary .= "RADIOGRAPHS: " . radiographs
-    if (radiographMethod != "")
-        summary .= " (" . radiographMethod . ")"
-    summary .= "`n`nREMARKS:`n" . txtRemarks
-    
-    MsgBox, 64, Referral Ready to Submit, %summary%`n`n(Automation to Open Dental will be implemented next)
+    ; Close form (no message)
+    ExitApp
 return
 
 ; ==============================================================================

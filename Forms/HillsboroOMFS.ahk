@@ -8,6 +8,9 @@
 #SingleInstance, Force
 SetWorkingDir %A_ScriptDir%
 
+; Include FormTransfer library
+#Include %A_ScriptDir%\..\Lib\FormTransfer.ahk
+
 ; ==============================================================================
 ; Global Variables for Form Data
 ; ==============================================================================
@@ -294,75 +297,17 @@ BtnSubmit:
         return
     }
     
-    ; Build summary of selected procedures/consultations
-    procedures := ""
-    if (chkExtraction)
-        procedures .= "Extraction(s), "
-    if (chkAlveoloplasty)
-        procedures .= "Alveoloplasty, "
-    if (chkFrenectomy)
-        procedures .= "Frenectomy, "
-    if (chkExposureBond)
-        procedures .= "Exposure/Bond, "
-    if (chkIncisionDrainage)
-        procedures .= "Incision/Drainage, "
-    if (chkBiopsyExcision)
-        procedures .= "Biopsy/Excision, "
-    if (chkConeBeamCT)
-        procedures .= "Cone Beam CT, "
-    if (txtProcedureOther != "")
-        procedures .= txtProcedureOther . ", "
+    ; Get form data
+    formData := GetFormData()
     
-    consultations := ""
-    if (chkDentalImplants)
-        consultations .= "Dental Implants, "
-    if (chkSinusLift)
-        consultations .= "Sinus Lift, "
-    if (chkBoneGrafting)
-        consultations .= "Bone Grafting, "
-    if (chkFacialTrauma)
-        consultations .= "Facial Trauma, "
-    if (chkOralPathology)
-        consultations .= "Oral Pathology, "
-    if (chkSoftTissueGrafting)
-        consultations .= "Soft Tissue Grafting, "
-    if (chkSkinLesions)
-        consultations .= "Skin Lesions, "
-    if (txtConsultOther != "")
-        consultations .= txtConsultOther . ", "
+    ; Hide form during transfer
+    Gui, Main:Hide
     
-    radiographs := ""
-    if (chkEnclosedEmailed)
-        radiographs .= "Enclosed/Emailed, "
-    if (chkGivenToPatient)
-        radiographs .= "Given to Patient, "
-    if (chkTakeNewOnes)
-        radiographs .= "Please Take New Ones, "
+    ; Transfer to Open Dental
+    FormTransfer("HillsboroOMFS", formData)
     
-    ; Remove trailing commas
-    procedures := RTrim(procedures, ", ")
-    consultations := RTrim(consultations, ", ")
-    radiographs := RTrim(radiographs, ", ")
-    
-    ; Who calls
-    whoCalls := chkPleaseCallPatient ? "Office will call patient" : "Patient will call for appointment"
-    
-    ; Build summary message
-    summary := "REFERRAL SUMMARY`n"
-    summary .= "================`n`n"
-    summary .= "Referring Doctor: " . ReferralSource . "`n"
-    summary .= "Contact: " . whoCalls . "`n`n"
-    summary .= "Teeth/Area: " . TeethAreaToTreat . "`n`n"
-    summary .= "PROCEDURES: " . (procedures != "" ? procedures : "None") . "`n"
-    
-    if (chkDiscussImplants)
-        summary .= "  (Discuss Implants/Bone Grafting: Yes)`n"
-    
-    summary .= "`nCONSULTATIONS: " . (consultations != "" ? consultations : "None") . "`n"
-    summary .= "`nRADIOGRAPHS: " . (radiographs != "" ? radiographs : "None") . "`n"
-    summary .= "`nNOTES:`n" . txtManagementNotes
-    
-    MsgBox, 64, Referral Ready to Submit, %summary%`n`n(Automation to Open Dental will be implemented next)
+    ; Close form (no message)
+    ExitApp
 return
 
 ; ==============================================================================
@@ -401,8 +346,8 @@ GetFormData()
     data.TeethAreaToTreat := TeethAreaToTreat
     
     ; Who calls
-    data.PleaseCallPatient := chkPleaseCallPatient
-    data.PatientWillCall := chkPatientWillCall
+    data.chkPleaseCallPatient := chkPleaseCallPatient
+    data.chkPatientWillCall := chkPatientWillCall
     
     ; Procedures
     data.chkExtraction := chkExtraction

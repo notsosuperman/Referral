@@ -130,6 +130,29 @@ Every form must include:
 - `SetOfficeName(name)` - Updates office name display
 - `GetFormData()` - Returns object with all form values
 
+### GetFormData() Rule
+**The key names in `GetFormData()` MUST match the GUI variable names exactly.**
+
+```ahk
+; GUI control definition:
+Gui, Main:Add, CheckBox, ... vchkExtraction, Extraction(s)
+Gui, Main:Add, Edit, ... vtxtManagementNotes
+
+; GetFormData() - use the SAME variable names as keys:
+GetFormData()
+{
+    Gui, Main:Submit, NoHide
+    
+    data := {}
+    data.chkExtraction := chkExtraction           ; ✓ Key matches var name
+    data.txtManagementNotes := txtManagementNotes ; ✓ Key matches var name
+    
+    return data
+}
+```
+
+This is required because CoordHelper scrapes the GUI variable names and stores them in `Mappings.ini`. FormTransfer then looks up values using those same names.
+
 ### Common Features
 - Allman brace style (per coding rules)
 - Global variables for all form fields
@@ -137,11 +160,16 @@ Every form must include:
 - Validation on submit
 - Summary display before automation
 
+## Implemented Features
+
+- [x] Open Dental automation - transfers form data to Fill Sheet
+- [x] CoordHelper - captures control coordinates from Open Dental
+- [x] Launcher - main menu to select specialist forms
+
 ## Upcoming Features
 
-- [ ] Open Dental automation to create referrals
-- [ ] Tab-through field transfer automation
 - [ ] Patient data auto-load from Open Dental
+- [ ] Pre-automation clicks (navigate to create referral, open sheet)
 - [ ] Additional referral forms as needed
 
 ## Technical Details

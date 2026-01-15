@@ -24,8 +24,14 @@ Gui, Launcher:Font, s11 Normal, Arial
 yPos := 70
 
 Gui, Launcher:Add, Button, x20 y%yPos% w260 h40 gLaunchOMFS, Hillsboro OMFS
-yPos += 50
+yPos += 45
 
+; OMFS Presets (indented, smaller)
+Gui, Launcher:Font, s9 Normal, Arial
+Gui, Launcher:Add, Button, x40 y%yPos% w240 h28 gLaunchOMFS_WisdomTeeth, > Wisdom Teeth
+yPos += 35
+
+Gui, Launcher:Font, s11 Normal, Arial
 Gui, Launcher:Add, Button, x20 y%yPos% w260 h40 gLaunchPerio, Northwest Periodontics
 yPos += 50
 
@@ -59,6 +65,18 @@ LaunchOMFS:
         return
     }
     Run, "%formPath%"
+    Sleep, 500
+    ExitApp
+return
+
+LaunchOMFS_WisdomTeeth:
+    formPath := A_ScriptDir . "\Forms\HillsboroOMFS.ahk"
+    if !FileExist(formPath)
+    {
+        MsgBox, 48, Launcher, File not found: %formPath%
+        return
+    }
+    Run, "%formPath%" "Wisdom Teeth"
     Sleep, 500
     ExitApp
 return

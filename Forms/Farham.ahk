@@ -18,6 +18,7 @@ SetWorkingDir %A_ScriptDir%
 ; Display only (set externally, not editable)
 global OfficeName := "Wolfe Dental"
 global PatientName := ""  ; Will be set when form is launched
+global ODWindowTitle := ""  ; Open Dental window title for validation
 
 ; GUI Control variables (required for GuiControl updates)
 global TxtOfficeName := ""
@@ -40,6 +41,20 @@ global chkPANo := 0
 ; ==============================================================================
 ; Build the GUI
 ; ==============================================================================
+
+; Parse command-line arguments
+; Expected: [patientName] [odWindowTitle] [presetName]
+if (A_Args.Length() >= 2)
+{
+    PatientName := A_Args[1]
+    ODWindowTitle := A_Args[2]
+}
+if (A_Args.Length() >= 3)
+{
+    ; Preset name provided as 3rd arg
+    PS_PresetOverride := A_Args[3]
+}
+
 BuildReferralForm()
 InitPresets()
 return
@@ -191,8 +206,8 @@ BtnSubmit:
     ; Hide form during transfer
     Gui, Main:Hide
     
-    ; Transfer to Open Dental
-    FormTransfer("Farham", formData)
+    ; Transfer to Open Dental (with navigation if OD window title available)
+    FormTransfer("Farham", formData, ODWindowTitle)
     
     ; Close form (no message)
     ExitApp

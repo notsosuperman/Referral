@@ -2,7 +2,7 @@
 ; Hillsboro OMFS Referral Slip - AHK v1
 ; Based on Open Dental Sheet XML Export
 ; WINDOW_TITLE: Hillsboro OMFS Referral Slip
-; SPECIALIST_NAME: Hillsboro Oral & Maxillofacial Surgery
+; SPECIALIST_NAME: OS - Hillsboro OMFS
 ; FORM_NAME: HillsboroOMFS
 ; ==============================================================================
 #NoEnv
@@ -18,6 +18,7 @@ SetWorkingDir %A_ScriptDir%
 ; Display only (set externally, not editable)
 global OfficeName := "Hillsboro Oral & Maxillofacial Surgery"
 global PatientName := ""  ; Will be set when form is launched
+global ODWindowTitle := ""  ; Open Dental window title for validation
 
 ; GUI Control variables (required for GuiControl updates)
 global TxtOfficeName := ""
@@ -67,6 +68,20 @@ global txtManagementNotes := ""
 ; ==============================================================================
 ; Build the GUI
 ; ==============================================================================
+
+; Parse command-line arguments
+; Expected: [patientName] [odWindowTitle] [presetName]
+if (A_Args.Length() >= 2)
+{
+    PatientName := A_Args[1]
+    ODWindowTitle := A_Args[2]
+}
+if (A_Args.Length() >= 3)
+{
+    ; Preset name provided as 3rd arg
+    PS_PresetOverride := A_Args[3]
+}
+
 BuildReferralForm()
 InitPresets()
 return
@@ -305,8 +320,8 @@ BtnSubmit:
     ; Hide form during transfer
     Gui, Main:Hide
     
-    ; Transfer to Open Dental
-    FormTransfer("HillsboroOMFS", formData)
+    ; Transfer to Open Dental (with navigation if OD window title available)
+    FormTransfer("HillsboroOMFS", formData, ODWindowTitle)
     
     ; Close form (no message)
     ExitApp

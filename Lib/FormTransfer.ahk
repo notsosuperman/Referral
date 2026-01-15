@@ -3,6 +3,9 @@
 ; Include this in form scripts: #Include %A_ScriptDir%\..\Lib\FormTransfer.ahk
 ; ==============================================================================
 
+; Include OD navigation
+#Include %A_ScriptDir%\..\Lib\ODAutomation.ahk
+
 ; ==============================================================================
 ; Configuration
 ; ==============================================================================
@@ -15,6 +18,7 @@ global FT_WindowTimeout := 5     ; seconds to wait for window
 
 ; Preset system globals
 global PS_FormName := ""
+global PS_PresetOverride := ""  ; Set by form before calling InitPresets()
 
 ; ==============================================================================
 ; State for waiting
@@ -46,7 +50,7 @@ FT_Dummy := 0  ; Required: label cannot point directly to function
 ; ==============================================================================
 ; Main Transfer Function
 ; ==============================================================================
-FormTransfer(formName, formData)
+FormTransfer(formName, formData, odWindowTitle := "")
 {
     ; Load mappings from INI
     mappings := FT_LoadMappings(formName)
@@ -56,9 +60,32 @@ FormTransfer(formName, formData)
         return false
     }
     
-    ; Get specialist name for display
+    ; Get specialist name
     specialistName := FT_GetSpecialistName(formName)
     
+    ; Navigate to Fill Sheet (if OD window title provided)
+    if (odWindowTitle != "")
+    {
+        if (!ODNavigate(odWindowTitle, specialistName))
+            return false
+    }
+    else
+    {
+        ; Legacy mode: manual F1 prompt
+        FT_ManualNavigationPrompt(specialistName)
+        if (FT_Aborted)
+            return false
+    }
+    
+    ; Fill Sheet window should now be active - proceed with transfer
+    FT_FillSheet(formData, mappings)
+    
+    return true
+}
+
+; Legacy manual navigation (F1 prompt)
+FT_ManualNavigationPrompt(specialistName)
+{
     ; Reset state
     FT_ReadyToFill := false
     FT_Aborted := false
@@ -84,13 +111,13 @@ FormTransfer(formName, formData)
     
     ; Check if aborted
     if (FT_Aborted)
-        return false
+        return
     
     ; Check if Fill Sheet window exists
     if !WinExist(FT_TargetWindow)
     {
         MsgBox, 48, FormTransfer, Could not find "%FT_TargetWindow%" window.`nMake sure it's open before pressing F1.
-        return false
+        return
     }
     
     ; Activate the window
@@ -99,9 +126,13 @@ FormTransfer(formName, formData)
     if ErrorLevel
     {
         MsgBox, 48, FormTransfer, Timeout waiting for "%FT_TargetWindow%" window.
-        return false
+        return
     }
-    
+}
+
+; Fill the sheet with form data
+FT_FillSheet(formData, mappings)
+{
     ; Set coordinate mode to client-relative
     CoordMode, Mouse, Client
     
@@ -267,6 +298,7 @@ FT_FindIndex(value, options)
 InitPresets()
 {
     global PS_FormName
+    global PS_PresetOverride
     
     ; Get form name from script header
     PS_FormName := PS_GetFormName()
@@ -276,8 +308,8 @@ InitPresets()
         return
     }
     
-    ; Determine preset name (from arg or "Default")
-    presetName := A_Args[1] ? A_Args[1] : "Default"
+    ; Determine preset name (from PS_PresetOverride global or "Default")
+    presetName := PS_PresetOverride ? PS_PresetOverride : "Default"
     
     ; Load and apply preset (silently fails if preset doesn't exist)
     presetData := PS_LoadPreset(PS_FormName, presetName)

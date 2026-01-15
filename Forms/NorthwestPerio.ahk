@@ -2,7 +2,7 @@
 ; Northwest Periodontics Referral Slip - AHK v1
 ; Based on Open Dental Sheet XML Export
 ; WINDOW_TITLE: Northwest Periodontics Referral Slip
-; SPECIALIST_NAME: Northwest Periodontics
+; SPECIALIST_NAME: Perio - Northwest Periodontics
 ; FORM_NAME: NorthwestPerio
 ; ==============================================================================
 #NoEnv
@@ -18,6 +18,7 @@ SetWorkingDir %A_ScriptDir%
 ; Display only (set externally, not editable)
 global OfficeName := "Northwest Periodontics & Dental Implants"
 global PatientName := ""  ; Will be set when form is launched
+global ODWindowTitle := ""  ; Open Dental window title for validation
 
 ; GUI Control variables (required for GuiControl updates)
 global TxtOfficeName := ""
@@ -44,6 +45,20 @@ global txtRemarks := ""
 ; ==============================================================================
 ; Build the GUI
 ; ==============================================================================
+
+; Parse command-line arguments
+; Expected: [patientName] [odWindowTitle] [presetName]
+if (A_Args.Length() >= 2)
+{
+    PatientName := A_Args[1]
+    ODWindowTitle := A_Args[2]
+}
+if (A_Args.Length() >= 3)
+{
+    ; Preset name provided as 3rd arg
+    PS_PresetOverride := A_Args[3]
+}
+
 BuildReferralForm()
 InitPresets()
 return
@@ -217,8 +232,8 @@ BtnSubmit:
     ; Hide form during transfer
     Gui, Main:Hide
     
-    ; Transfer to Open Dental
-    FormTransfer("NorthwestPerio", formData)
+    ; Transfer to Open Dental (with navigation if OD window title available)
+    FormTransfer("NorthwestPerio", formData, ODWindowTitle)
     
     ; Close form (no message)
     ExitApp

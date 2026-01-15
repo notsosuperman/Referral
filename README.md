@@ -179,10 +179,49 @@ This is required because CoordHelper scrapes the GUI variable names and stores t
 
 ## Implemented Features
 
-- [x] Open Dental automation - transfers form data to Fill Sheet
+- [x] Open Dental automation - fully automated navigation + data transfer
 - [x] CoordHelper - captures control coordinates from Open Dental
-- [x] Launcher - main menu to select specialist forms
+- [x] Launcher - main menu with patient context capture
 - [x] Preset system - save/load form presets with auto-fill
+- [x] Patient name auto-display from Open Dental
+
+## Open Dental Integration
+
+### Automatic Navigation
+Forms launched from the Launcher **automatically navigate** from patient chart to Fill Sheet:
+1. Launcher captures patient name and OD window title
+2. Form displays patient name in header
+3. On Submit: navigates through OD menus to Fill Sheet
+4. Fills sheet with form data
+
+No manual F1 prompts needed!
+
+### Manual Navigation (Legacy)
+If form launched directly (not from Launcher):
+1. Navigate to Fill Sheet in Open Dental manually
+2. Press F1 when ready
+3. Form fills sheet
+
+### Open Dental Program Link (Future)
+You can configure Open Dental to launch forms directly with patient context:
+
+**Setup in Open Dental:**
+```
+Main Menu → Setup → Program Links → Add
+  Description: OMFS Referral
+  Path to exe: C:\Program Files\AutoHotkey\v1.1.37.02\AutoHotkeyU64.exe
+  Command Line: "C:\Path\To\Forms\HillsboroOMFS.ahk" "[NameFL]" "Open Dental {user} - [LName], [FName]"
+  
+  Available placeholders:
+    [LName]         - Last name
+    [FName]         - First name  
+    [NameFL]        - Full name (First Last)
+    [ChartNumber]   - Patient chart number
+    [PatNum]        - Patient ID
+    [WirelessPhone] - Cell phone
+```
+
+Then right-click patient in OD → select "OMFS Referral" to launch form.
 
 ## Preset System
 
@@ -220,9 +259,9 @@ chkCBCTNo=0
 
 ## Upcoming Features
 
-- [ ] Patient data auto-load from Open Dental
-- [ ] Pre-automation clicks (navigate to create referral, open sheet)
 - [ ] Additional referral forms as needed
+- [ ] Adjustable coordinates per screen resolution
+- [ ] Logging to file (currently ToolTip only)
 
 ## Technical Details
 
@@ -244,13 +283,16 @@ Referral/
 │   ├── Mappings.ini           # Control coordinates for all forms
 │   └── Presets.ini            # Form presets (auto-fill values)
 ├── Lib/                       # Shared libraries
-│   └── FormTransfer.ahk       # Transfer automation + preset system
+│   ├── FormTransfer.ahk       # Transfer automation + preset system
+│   ├── ODAutomation.ahk       # OD navigation & window management
+│   └── Logging.ahk            # Debug logging (Checkpoint/Failure/Success)
 ├── Tools/                     # Development/setup tools
 │   ├── ScreenshotHelper.ahk   # Capture form screenshots
 │   └── CoordHelper.ahk        # Gather Open Dental coordinates
 ├── Docs/                      # Documentation
 │   ├── PLANNING.md            # Architecture and build plan
-│   └── PRESET_SYSTEM.md       # Preset system documentation
+│   ├── PRESET_SYSTEM.md       # Preset system documentation
+│   └── OD_NAVIGATION.md       # Navigation automation details
 ├── Open Dental Sheets xmls/   # Source XML files
 │   ├── Hillsboro OMFS
 │   └── Northwest Perio

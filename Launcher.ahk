@@ -7,6 +7,22 @@
 SetWorkingDir %A_ScriptDir%
 
 ; ==============================================================================
+; Capture Open Dental Window & Patient Name
+; ==============================================================================
+global ODWindowTitle := ""
+global PatientName := ""
+
+; Check if Open Dental is active
+if (WinActive("Open Dental {"))
+{
+    WinGetActiveTitle, ODWindowTitle
+    
+    ; Parse patient name from title: "Open Dental {username} - LastName, FirstName..."
+    if (RegExMatch(ODWindowTitle, " - (.+?)(\||$)", match))
+        PatientName := Trim(match1)
+}
+
+; ==============================================================================
 ; Build the GUI
 ; ==============================================================================
 Gui, Launcher:New, , Dental Referral System
@@ -58,52 +74,48 @@ return
 ; ==============================================================================
 
 LaunchOMFS:
-    formPath := A_ScriptDir . "\Forms\HillsboroOMFS.ahk"
-    if !FileExist(formPath)
-    {
-        MsgBox, 48, Launcher, File not found: %formPath%
-        return
-    }
-    Run, "%formPath%"
-    Sleep, 500
-    ExitApp
+    LaunchForm("Forms\HillsboroOMFS.ahk", "")
 return
 
 LaunchOMFS_WisdomTeeth:
-    formPath := A_ScriptDir . "\Forms\HillsboroOMFS.ahk"
-    if !FileExist(formPath)
-    {
-        MsgBox, 48, Launcher, File not found: %formPath%
-        return
-    }
-    Run, "%formPath%" "Wisdom Teeth"
-    Sleep, 500
-    ExitApp
+    LaunchForm("Forms\HillsboroOMFS.ahk", "Wisdom Teeth")
 return
 
 LaunchPerio:
-    formPath := A_ScriptDir . "\Forms\NorthwestPerio.ahk"
-    if !FileExist(formPath)
-    {
-        MsgBox, 48, Launcher, File not found: %formPath%
-        return
-    }
-    Run, "%formPath%"
-    Sleep, 500
-    ExitApp
+    LaunchForm("Forms\NorthwestPerio.ahk", "")
 return
 
 LaunchFarham:
-    formPath := A_ScriptDir . "\Forms\Farham.ahk"
-    if !FileExist(formPath)
+    LaunchForm("Forms\Farham.ahk", "")
+return
+
+; Helper function to launch forms with patient context
+LaunchForm(formPath, presetName)
+{
+    global ODWindowTitle
+    global PatientName
+    
+    fullPath := A_ScriptDir . "\" . formPath
+    if !FileExist(fullPath)
     {
-        MsgBox, 48, Launcher, File not found: %formPath%
+        MsgBox, 48, Launcher, File not found: %fullPath%
         return
     }
-    Run, "%formPath%"
+    
+    ; Build command line: "patientName" "odWindowTitle" "presetName"
+    ; Use quotes to handle spaces in patient names/titles
+    cmdLine := """" . fullPath . """"
+    if (PatientName != "")
+        cmdLine .= " """ . PatientName . """"
+    if (ODWindowTitle != "")
+        cmdLine .= " """ . ODWindowTitle . """"
+    if (presetName != "")
+        cmdLine .= " """ . presetName . """"
+    
+    Run, %cmdLine%
     Sleep, 500
     ExitApp
-return
+}
 
 ; ==============================================================================
 ; GUI Close Handler

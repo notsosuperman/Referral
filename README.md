@@ -182,6 +182,41 @@ This is required because CoordHelper scrapes the GUI variable names and stores t
 - [x] Open Dental automation - transfers form data to Fill Sheet
 - [x] CoordHelper - captures control coordinates from Open Dental
 - [x] Launcher - main menu to select specialist forms
+- [x] Preset system - save/load form presets with auto-fill
+
+## Preset System
+
+Forms auto-load a `Default` preset on startup, pre-filling controls with saved values.
+
+### Save a Preset
+1. Fill out the form with desired values
+2. Press **Ctrl+Shift+S**
+3. Enter a preset name (e.g., "Urgent", "Routine")
+4. Preset saved to `Config/Presets.ini`
+
+### Load a Preset
+```powershell
+# Load Default preset (automatic)
+AutoHotkeyU64.exe Forms\Farham.ahk
+
+# Load specific preset
+AutoHotkeyU64.exe Forms\Farham.ahk "Urgent"
+```
+
+### Presets.ini Format
+```ini
+[Farham_Default]
+ReferralSource=Dr. Gabe Proulx
+txtNotes=
+chkCBCTYes=0
+chkCBCTNo=1
+
+[Farham_Urgent]
+ReferralSource=Dr. Gabe Proulx
+txtNotes=URGENT - Priority case
+chkCBCTYes=1
+chkCBCTNo=0
+```
 
 ## Upcoming Features
 
@@ -206,14 +241,16 @@ Referral/
 │   ├── NorthwestPerio.ahk     # Northwest Perio referral form
 │   └── Farham.ahk             # Farham referral form
 ├── Config/                    # Configuration files
-│   └── Mappings.ini           # Control coordinates for all forms
+│   ├── Mappings.ini           # Control coordinates for all forms
+│   └── Presets.ini            # Form presets (auto-fill values)
 ├── Lib/                       # Shared libraries
-│   └── FormTransfer.ahk       # Transfer automation logic
+│   └── FormTransfer.ahk       # Transfer automation + preset system
 ├── Tools/                     # Development/setup tools
 │   ├── ScreenshotHelper.ahk   # Capture form screenshots
 │   └── CoordHelper.ahk        # Gather Open Dental coordinates
 ├── Docs/                      # Documentation
-│   └── PLANNING.md            # Architecture and build plan
+│   ├── PLANNING.md            # Architecture and build plan
+│   └── PRESET_SYSTEM.md       # Preset system documentation
 ├── Open Dental Sheets xmls/   # Source XML files
 │   ├── Hillsboro OMFS
 │   └── Northwest Perio

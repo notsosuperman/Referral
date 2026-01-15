@@ -3,6 +3,7 @@
 ; Based on Open Dental Sheet XML Export
 ; WINDOW_TITLE: Farham Referral Slip
 ; SPECIALIST_NAME: Farham
+; FORM_NAME: Farham
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force
@@ -40,6 +41,7 @@ global chkPANo := 0
 ; Build the GUI
 ; ==============================================================================
 BuildReferralForm()
+InitPresets()
 return
 
 BuildReferralForm()

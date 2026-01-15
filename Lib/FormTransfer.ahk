@@ -1,6 +1,6 @@
 ; ==============================================================================
-; FormTransfer Library - Transfer form data to Open Dental
-; Include this in form scripts: #Include, %A_ScriptDir%\..\Lib\FormTransfer.ahk
+; FormTransfer Library - Transfer form data to Open Dental + Preset System
+; Include this in form scripts: #Include %A_ScriptDir%\..\Lib\FormTransfer.ahk
 ; ==============================================================================
 
 ; ==============================================================================
@@ -8,9 +8,13 @@
 ; ==============================================================================
 global FT_TargetWindow := "Fill Sheet"
 global FT_ConfigPath := A_ScriptDir . "\..\Config\Mappings.ini"
+global FT_PresetPath := A_ScriptDir . "\..\Config\Presets.ini"
 global FT_ActionDelay := 50      ; ms between actions
 global FT_DropdownDelay := 30    ; ms between dropdown Down presses
 global FT_WindowTimeout := 5     ; seconds to wait for window
+
+; Preset system globals
+global PS_FormName := ""
 
 ; ==============================================================================
 ; State for waiting
@@ -30,6 +34,10 @@ return
 
 FT_Abort:
     FT_Aborted := true
+return
+
+PS_SavePresetHotkey:
+    PS_PromptAndSavePreset()
 return
 
 FT_EndAutoExec:
@@ -246,4 +254,173 @@ FT_FindIndex(value, options)
             return idx
     }
     return 0
+}
+
+; ==============================================================================
+; PRESET SYSTEM FUNCTIONS
+; ==============================================================================
+
+; ==============================================================================
+; InitPresets - Call after GUI is built
+; Parses FORM_NAME from script, loads preset, registers hotkey
+; ==============================================================================
+InitPresets()
+{
+    global PS_FormName
+    
+    ; Get form name from script header
+    PS_FormName := PS_GetFormName()
+    if (PS_FormName = "")
+    {
+        ; No FORM_NAME found, skip preset loading
+        return
+    }
+    
+    ; Determine preset name (from arg or "Default")
+    presetName := A_Args[1] ? A_Args[1] : "Default"
+    
+    ; Load and apply preset (silently fails if preset doesn't exist)
+    presetData := PS_LoadPreset(PS_FormName, presetName)
+    if (presetData.Count() > 0)
+        PS_ApplyPreset(presetData)
+    
+    ; Register save preset hotkey (Ctrl+Shift+S)
+    Hotkey, ^+s, PS_SavePresetHotkey, On
+}
+
+; ==============================================================================
+; PS_GetFormName - Parse FORM_NAME from main script's header comments
+; ==============================================================================
+PS_GetFormName()
+{
+    ; Read the main script file
+    FileRead, scriptContent, %A_ScriptFullPath%
+    if (ErrorLevel)
+        return ""
+    
+    ; Look for ; FORM_NAME: xxx in the first 20 lines
+    lineCount := 0
+    Loop, Parse, scriptContent, `n, `r
+    {
+        lineCount++
+        if (lineCount > 20)
+            break
+        
+        if (RegExMatch(A_LoopField, ";\s*FORM_NAME:\s*(.+)", match))
+            return Trim(match1)
+    }
+    
+    return ""
+}
+
+; ==============================================================================
+; PS_LoadPreset - Load preset from Presets.ini
+; Returns object with key=value pairs
+; ==============================================================================
+PS_LoadPreset(formName, presetName)
+{
+    global FT_PresetPath
+    
+    data := {}
+    sectionName := formName . "_" . presetName
+    
+    ; Read section content
+    IniRead, sectionContent, %FT_PresetPath%, %sectionName%
+    if (sectionContent = "ERROR" || sectionContent = "")
+        return data
+    
+    ; Parse each line
+    Loop, Parse, sectionContent, `n, `r
+    {
+        line := A_LoopField
+        if (line = "")
+            continue
+        
+        ; Split key=value
+        equalPos := InStr(line, "=")
+        if !equalPos
+            continue
+        
+        key := SubStr(line, 1, equalPos - 1)
+        value := SubStr(line, equalPos + 1)
+        
+        data[key] := value
+    }
+    
+    return data
+}
+
+; ==============================================================================
+; PS_ApplyPreset - Apply preset data to GUI controls
+; ==============================================================================
+PS_ApplyPreset(data)
+{
+    for key, value in data
+    {
+        ; Skip empty keys
+        if (key = "")
+            continue
+        
+        ; Determine control type by prefix
+        if (SubStr(key, 1, 3) = "chk")
+        {
+            ; Checkbox - set checked state
+            GuiControl, Main:, %key%, %value%
+        }
+        else if (SubStr(key, 1, 3) = "txt")
+        {
+            ; Text/Edit field
+            GuiControl, Main:, %key%, %value%
+        }
+        else
+        {
+            ; Assume dropdown or other - try ChooseString first, then direct set
+            GuiControl, Main:ChooseString, %key%, %value%
+            if (ErrorLevel)
+                GuiControl, Main:, %key%, %value%
+        }
+    }
+}
+
+; ==============================================================================
+; PS_SavePreset - Save current form data to Presets.ini
+; ==============================================================================
+PS_SavePreset(formName, presetName)
+{
+    global FT_PresetPath
+    
+    ; Get form data (requires form to have GetFormData function)
+    formData := GetFormData()
+    
+    sectionName := formName . "_" . presetName
+    
+    ; Write each key=value to the INI section
+    for key, value in formData
+    {
+        IniWrite, %value%, %FT_PresetPath%, %sectionName%, %key%
+    }
+}
+
+; ==============================================================================
+; PS_PromptAndSavePreset - Show input box and save preset
+; ==============================================================================
+PS_PromptAndSavePreset()
+{
+    global PS_FormName
+    
+    if (PS_FormName = "")
+    {
+        MsgBox, 48, Save Preset, FORM_NAME not found in script header.`nAdd "; FORM_NAME: YourFormName" to the script.
+        return
+    }
+    
+    ; Prompt for preset name
+    InputBox, presetName, Save Preset, Enter preset name:,, 300, 130
+    if (ErrorLevel || presetName = "")
+        return
+    
+    ; Save the preset
+    PS_SavePreset(PS_FormName, presetName)
+    
+    MsgBox, 64, Save Preset, Preset "%presetName%" saved successfully!`n`nSection: [%PS_FormName%_%presetName%]
 }

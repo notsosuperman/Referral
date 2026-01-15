@@ -3,6 +3,7 @@
 ; Based on Open Dental Sheet XML Export
 ; WINDOW_TITLE: Northwest Periodontics Referral Slip
 ; SPECIALIST_NAME: Northwest Periodontics
+; FORM_NAME: NorthwestPerio
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force
@@ -44,6 +45,7 @@ global txtRemarks := ""
 ; Build the GUI
 ; ==============================================================================
 BuildReferralForm()
+InitPresets()
 return
 
 BuildReferralForm()

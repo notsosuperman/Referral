@@ -3,6 +3,7 @@
 ; Based on Open Dental Sheet XML Export
 ; WINDOW_TITLE: Hillsboro OMFS Referral Slip
 ; SPECIALIST_NAME: Hillsboro Oral & Maxillofacial Surgery
+; FORM_NAME: HillsboroOMFS
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force
@@ -67,6 +68,7 @@ global txtManagementNotes := ""
 ; Build the GUI
 ; ==============================================================================
 BuildReferralForm()
+InitPresets()
 return
 
 BuildReferralForm()

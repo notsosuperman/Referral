@@ -29,9 +29,8 @@ yPos += 50
 Gui, Launcher:Add, Button, x20 y%yPos% w260 h40 gLaunchPerio, Northwest Periodontics
 yPos += 50
 
-; Add more specialist buttons here as needed
-; Gui, Launcher:Add, Button, x20 y%yPos% w260 h40 gLaunchOther, Other Specialist
-; yPos += 50
+Gui, Launcher:Add, Button, x20 y%yPos% w260 h40 gLaunchFarham, Farham
+yPos += 50
 
 ; Separator
 Gui, Launcher:Add, Text, x20 y%yPos% w260 h2 +0x10
@@ -66,6 +65,18 @@ return
 
 LaunchPerio:
     formPath := A_ScriptDir . "\Forms\NorthwestPerio.ahk"
+    if !FileExist(formPath)
+    {
+        MsgBox, 48, Launcher, File not found: %formPath%
+        return
+    }
+    Run, "%formPath%"
+    Sleep, 500
+    ExitApp
+return
+
+LaunchFarham:
+    formPath := A_ScriptDir . "\Forms\Farham.ahk"
     if !FileExist(formPath)
     {
         MsgBox, 48, Launcher, File not found: %formPath%

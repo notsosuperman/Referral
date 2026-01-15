@@ -25,17 +25,34 @@ Referral form for **Northwest Periodontics & Dental Implants**
 - Radiographs: Yes/No, Will Send/Patient Will Bring
 - Remarks (notes)
 
+### Farham (`Farham.ahk`)
+Referral form for **Farham**
+
+**Features:**
+- Patient Name and Referring Doctor (header)
+- For Treatment Including (notes field)
+- Full Mouth X-Rays / Pano: Mailed, With Patient, Please Take
+- Was a CBCT taken? (Y/N)
+- Was PA taken? (Y/N)
+
 ## Usage
 
 ### Running a Form
-```bash
-# Run directly from Forms directory
-cd Forms
-HillsboroOMFS.ahk
-NorthwestPerio.ahk
+```powershell
+# Double-click the .ahk file, or run from terminal:
+AutoHotkeyU64.exe Forms\HillsboroOMFS.ahk
 
-# Or with AutoHotkey
-AutoHotkey.exe Forms\HillsboroOMFS.ahk
+# Or use the Launcher
+AutoHotkeyU64.exe Launcher.ahk
+```
+
+### Running Tools from Terminal
+```powershell
+# Screenshot a form
+AutoHotkeyU64.exe Tools\ScreenshotHelper.ahk Farham.ahk
+
+# Run CoordHelper to capture Open Dental coordinates
+AutoHotkeyU64.exe Tools\CoordHelper.ahk Farham.ahk
 ```
 
 ### Utility Functions
@@ -186,7 +203,8 @@ This is required because CoordHelper scrapes the GUI variable names and stores t
 Referral/
 ├── Forms/                     # Referral form scripts
 │   ├── HillsboroOMFS.ahk      # Hillsboro OMFS referral form
-│   └── NorthwestPerio.ahk     # Northwest Perio referral form
+│   ├── NorthwestPerio.ahk     # Northwest Perio referral form
+│   └── Farham.ahk             # Farham referral form
 ├── Config/                    # Configuration files
 │   └── Mappings.ini           # Control coordinates for all forms
 ├── Lib/                       # Shared libraries

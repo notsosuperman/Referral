@@ -42,6 +42,8 @@ Failure(message, logWindow := true, showMsgBox := true, exitScript := true)
     
     if (exitScript)
     {
+        ; Note: BlockInputOff() should be called before Failure() in most cases
+        ; This is a safety fallback
         BlockInput, Off
         BlockInput, MouseMoveOff
         ExitApp

@@ -33,6 +33,24 @@ global ODModeCheckColor := 0xFFFFFF
 global imagingCheckPixel := {x: 1, y: 373}
 
 ; ==============================================================================
+; Input Blocking Functions (from Combo Master)
+; ==============================================================================
+
+BlockInputOn()
+{
+    BlockInput, On
+    BlockInput, MouseMove
+    return
+}
+
+BlockInputOff()
+{
+    BlockInput, Off
+    BlockInput, MouseMoveOff
+    return
+}
+
+; ==============================================================================
 ; Main Navigation Function
 ; ==============================================================================
 
@@ -41,14 +59,12 @@ ODNavigate(odWindowTitle, specialistName)
     Checkpoint("Starting Open Dental navigation", false)
     
     ; Block input during automation
-    BlockInput, On
-    BlockInput, MouseMove
+    BlockInputOn()
     
     ; 1. Activate Open Dental main window
     if (!ODWinActivate(odWindowTitle))
     {
-        BlockInput, Off
-        BlockInput, MouseMoveOff
+        BlockInputOff()
         Failure("Could not activate Open Dental window. Please close any blocking windows and try again.")
         return false
     }
@@ -56,8 +72,7 @@ ODNavigate(odWindowTitle, specialistName)
     ; 2. Ensure Chart view is active
     if (!ValidateChartView())
     {
-        BlockInput, Off
-        BlockInput, MouseMoveOff
+        BlockInputOff()
         Failure("Could not switch to Chart view")
         return false
     }
@@ -106,8 +121,9 @@ ODNavigate(odWindowTitle, specialistName)
         return false
     
     Success("Navigation to Fill Sheet complete")
-    BlockInput, Off
-    BlockInput, MouseMoveOff
+    
+    ; Unblock input before transferring
+    BlockInputOff()
     return true
 }
 
@@ -142,21 +158,18 @@ ODWinActivate(expectedTitle)
         ; Check if it's a different patient (wrong OD main window)
         if (InStr(blockingWindow, "Open Dental {"))
         {
-            BlockInput, Off
-            BlockInput, MouseMoveOff
+            BlockInputOff()
             Failure("PATIENT MISMATCH!`n`nExpected patient:`n" . expectedTitle . "`n`nCurrent patient:`n" . blockingWindow . "`n`nPlease return to the correct patient chart before submitting.")
             return false
         }
         
         ; It's a blocking sub-window
-        BlockInput, Off
-        BlockInput, MouseMoveOff
+        BlockInputOff()
         Failure("Open Dental window is blocked by:`n" . blockingWindow . "`n`nPlease close this window and try again.")
         return false
     }
     
-    BlockInput, Off
-    BlockInput, MouseMoveOff
+    BlockInputOff()
     Failure("Could not activate Open Dental window")
     return false
 }
@@ -175,8 +188,7 @@ ValidateChartView()
     
     if (mode = "")
     {
-        BlockInput, Off
-        BlockInput, MouseMoveOff
+        BlockInputOff()
         Failure("Could not detect Open Dental mode")
         return false
     }
@@ -289,8 +301,7 @@ WaitForWindow(windowTitle, timeoutSeconds, description)
     WinWaitActive, %windowTitle%,, %timeoutSeconds%
     if (ErrorLevel)
     {
-        BlockInput, Off
-        BlockInput, MouseMoveOff
+        BlockInputOff()
         Failure(description . " did not appear within " . timeoutSeconds . " seconds")
         return false
     }

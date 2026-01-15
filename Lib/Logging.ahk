@@ -6,8 +6,8 @@
 ; ==============================================================================
 ; Configuration
 ; ==============================================================================
-global LOG_TO_CONSOLE := true  ; Show ToolTips for debugging
-global LOG_TO_FILE := false     ; Write to file (set path below)
+global LOG_TO_CONSOLE := true   ; Show ToolTips for debugging
+global LOG_TO_FILE := true       ; Write to file for troubleshooting
 global LOG_FILE_PATH := A_ScriptDir . "\..\Logs\referral.log"
 
 ; ==============================================================================

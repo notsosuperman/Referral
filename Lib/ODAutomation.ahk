@@ -47,6 +47,8 @@ ODNavigate(odWindowTitle, specialistName)
     ; 1. Activate Open Dental main window
     if (!ODWinActivate(odWindowTitle))
     {
+        BlockInput, Off
+        BlockInput, MouseMoveOff
         Failure("Could not activate Open Dental window. Please close any blocking windows and try again.")
         return false
     }
@@ -54,6 +56,8 @@ ODNavigate(odWindowTitle, specialistName)
     ; 2. Ensure Chart view is active
     if (!ValidateChartView())
     {
+        BlockInput, Off
+        BlockInput, MouseMoveOff
         Failure("Could not switch to Chart view")
         return false
     }
@@ -122,9 +126,11 @@ ODWinActivate(expectedTitle)
     
     ; Check if it's actually active
     WinGetTitle, activeTitle, A
-    if (InStr(activeTitle, "Open Dental {"))
+    
+    ; Exact title match - correct patient
+    if (activeTitle = expectedTitle)
     {
-        Checkpoint("Open Dental main window activated")
+        Checkpoint("Correct patient window confirmed: " . expectedTitle)
         return true
     }
     
@@ -132,10 +138,25 @@ ODWinActivate(expectedTitle)
     if (WinActive("ahk_exe OpenDental.exe"))
     {
         WinGetTitle, blockingWindow, A
-        Failure("Open Dental window is blocked by: " . blockingWindow . "`n`nPlease close this window and try again.")
+        
+        ; Check if it's a different patient (wrong OD main window)
+        if (InStr(blockingWindow, "Open Dental {"))
+        {
+            BlockInput, Off
+            BlockInput, MouseMoveOff
+            Failure("PATIENT MISMATCH!`n`nExpected patient:`n" . expectedTitle . "`n`nCurrent patient:`n" . blockingWindow . "`n`nPlease return to the correct patient chart before submitting.")
+            return false
+        }
+        
+        ; It's a blocking sub-window
+        BlockInput, Off
+        BlockInput, MouseMoveOff
+        Failure("Open Dental window is blocked by:`n" . blockingWindow . "`n`nPlease close this window and try again.")
         return false
     }
     
+    BlockInput, Off
+    BlockInput, MouseMoveOff
     Failure("Could not activate Open Dental window")
     return false
 }
@@ -154,6 +175,8 @@ ValidateChartView()
     
     if (mode = "")
     {
+        BlockInput, Off
+        BlockInput, MouseMoveOff
         Failure("Could not detect Open Dental mode")
         return false
     }
@@ -266,6 +289,8 @@ WaitForWindow(windowTitle, timeoutSeconds, description)
     WinWaitActive, %windowTitle%,, %timeoutSeconds%
     if (ErrorLevel)
     {
+        BlockInput, Off
+        BlockInput, MouseMoveOff
         Failure(description . " did not appear within " . timeoutSeconds . " seconds")
         return false
     }

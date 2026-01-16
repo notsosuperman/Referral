@@ -9,8 +9,10 @@
 #SingleInstance, Force
 SetWorkingDir %A_ScriptDir%
 
-; Include FormTransfer library
+; Include FormTransfer library (which includes Logging)
 #Include %A_ScriptDir%\..\Lib\FormTransfer.ahk
+
+Checkpoint("HillsboroOMFS form script started", false)
 
 ; ==============================================================================
 ; Global Variables for Form Data
@@ -71,23 +73,31 @@ global txtManagementNotes := ""
 
 ; Parse command-line arguments
 ; Expected: [patientName] [odWindowTitle] [presetName]
+Checkpoint("Parsing command-line arguments", false)
 if (A_Args.Length() >= 2)
 {
     PatientName := A_Args[1]
     ODWindowTitle := A_Args[2]
+    Checkpoint("Args parsed - Patient: " . PatientName, false)
 }
 if (A_Args.Length() >= 3)
 {
     ; Preset name provided as 3rd arg
     PS_PresetOverride := A_Args[3]
+    Checkpoint("Preset override: " . PS_PresetOverride, false)
 }
 
+Checkpoint("Calling BuildReferralForm", false)
 BuildReferralForm()
+Checkpoint("Calling InitPresets", false)
 InitPresets()
+Checkpoint("Form initialization complete", false)
 return
 
 BuildReferralForm()
 {
+    Checkpoint("BuildReferralForm started", false)
+    
     ; Set GUI defaults
     Gui, Main:New, +Resize +MinSize500x600, Hillsboro OMFS Referral Slip
     Gui, Main:Color, FFFFFF
@@ -241,7 +251,9 @@ BuildReferralForm()
     Gui, Main:Add, Button, x460 y%yPos% w140 h35 gBtnSubmit Default, Submit Referral
     
     ; Show the GUI
+    Checkpoint("About to show GUI", false)
     Gui, Main:Show, w620 h750
+    Checkpoint("GUI shown", false)
 }
 
 ; ==============================================================================

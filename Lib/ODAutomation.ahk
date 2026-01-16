@@ -84,9 +84,7 @@ ODNavigate(odWindowTitle, specialistName)
     
     ; 4. Open Referrals for Patient
     Checkpoint("Opening Referrals for Patient")
-    x := OD_REFERRED_FROM.x
-    y := OD_REFERRED_FROM.y
-    Click, %x%, %y%, 2  ; Double-click
+    ClickAt(OD_REFERRED_FROM, "Referred from", 2)  ; Double-click
     
     if (!WaitForWindow("Referrals for Patient", 3, "Referrals for Patient window"))
         return false
@@ -286,12 +284,10 @@ UnfocusImagingModeFrame()
 }
 
 ; Click at coordinates with logging
-ClickAt(coordObj, description)
+ClickAt(coordObj, description, clickCount := 1)
 {
     CoordMode, Mouse, Client
-    x := coordObj.x
-    y := coordObj.y
-    Click, %x%, %y%
+    MouseClick,, % coordObj.x, % coordObj.y, %clickCount%
     Sleep, 50
 }
 

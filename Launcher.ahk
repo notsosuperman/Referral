@@ -120,9 +120,10 @@ LaunchForm(formPath, presetName)
         return
     }
     
-    ; Build command line: "patientName" "odWindowTitle" "presetName"
-    ; Use quotes to handle spaces in patient names/titles
-    cmdLine := """" . fullPath . """"
+    ; Build command line with explicit AutoHotkey path
+    ahkExe := "C:\Program Files\AutoHotkey\v1.1.37.02\AutoHotkeyU64.exe"
+    cmdLine := """" . ahkExe . """ """ . fullPath . """"
+    
     if (PatientName != "")
         cmdLine .= " """ . PatientName . """"
     if (ODWindowTitle != "")

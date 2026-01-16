@@ -7,31 +7,37 @@
 SetWorkingDir %A_ScriptDir%
 
 ; ==============================================================================
-; Capture Open Dental Window & Patient Name
+; Cursor Mode Check - Pause if running in Cursor IDE
 ; ==============================================================================
 global ODWindowTitle := ""
 global PatientName := ""
-global RunningInCursor := false
 
 ; Check if running inside Cursor IDE
 WinGetTitle, currentTitle, A
 if (InStr(currentTitle, "Cursor"))
 {
-    RunningInCursor := true
-    ToolTip, Running in Cursor mode`n`nActivate an Open Dental patient window and press F1 to capture patient context
-    Hotkey, F1, CaptureODContext, On
+    ToolTip, Running in Cursor mode`n`nActivate an Open Dental patient window and press F1 to continue
+    Hotkey, F1, ContinueAfterF1, On
+    return  ; Pause auto-execute section
 }
-else
+
+ContinueAfterF1:
+    ToolTip  ; Clear tooltip
+    Hotkey, F1, Off
+    ; Fall through to OD parsing
+
+; ==============================================================================
+; Parse Open Dental Window & Patient Name
+; ==============================================================================
+
+; Check if Open Dental is active
+if (WinActive("Open Dental {"))
 {
-    ; Check if Open Dental is active
-    if (WinActive("Open Dental {"))
-    {
-        WinGetActiveTitle, ODWindowTitle
-        
-        ; Parse patient name from title: "Open Dental {username} - LastName, FirstName..."
-        if (RegExMatch(ODWindowTitle, " - (.+?)(\||$)", match))
-            PatientName := Trim(match1)
-    }
+    WinGetActiveTitle, ODWindowTitle
+    
+    ; Parse patient name from title: "Open Dental {username} - LastName, FirstName..."
+    if (RegExMatch(ODWindowTitle, " - (.+?)(\||$)", match))
+        PatientName := Trim(match1)
 }
 
 ; ==============================================================================
@@ -128,36 +134,6 @@ LaunchForm(formPath, presetName)
     Sleep, 500
     ExitApp
 }
-
-; ==============================================================================
-; Cursor Mode: Capture OD Context
-; ==============================================================================
-CaptureODContext:
-    ; Check if Open Dental is now active
-    if (WinActive("Open Dental {"))
-    {
-        WinGetActiveTitle, ODWindowTitle
-        
-        ; Parse patient name from title
-        if (RegExMatch(ODWindowTitle, " - (.+?)(\||$)", match))
-            PatientName := Trim(match1)
-        
-        ToolTip, Patient context captured!`n`n%PatientName%
-        SetTimer, RemoveCaptureTooltip, -2000
-        
-        ; Activate launcher again
-        WinActivate, Dental Referral System
-    }
-    else
-    {
-        ToolTip, Please activate an Open Dental patient window first!
-        SetTimer, RemoveCaptureTooltip, -2000
-    }
-return
-
-RemoveCaptureTooltip:
-    ToolTip
-return
 
 ; ==============================================================================
 ; GUI Close Handler

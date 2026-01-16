@@ -84,7 +84,9 @@ ODNavigate(odWindowTitle, specialistName)
     
     ; 4. Open Referrals for Patient
     Checkpoint("Opening Referrals for Patient")
-    Click, % OD_REFERRED_FROM.x ", " % OD_REFERRED_FROM.y ", 2"  ; Double-click
+    x := OD_REFERRED_FROM.x
+    y := OD_REFERRED_FROM.y
+    Click, %x%, %y%, 2  ; Double-click
     
     if (!WaitForWindow("Referrals for Patient", 3, "Referrals for Patient window"))
         return false

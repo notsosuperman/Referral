@@ -11,9 +11,17 @@ SetWorkingDir %A_ScriptDir%
 ; Get target script from command line argument, or use default
 targetScript := A_Args[1] ? A_Args[1] : "HillsboroOMFS.ahk"
 
-; Prepend Forms directory if the script doesn't contain a path
+; Handle path to Forms directory
 if !InStr(targetScript, "\")
+{
+    ; Just filename - prepend ..\Forms\
     targetScript := "..\Forms\" . targetScript
+}
+else if (SubStr(targetScript, 1, 6) = "Forms\")
+{
+    ; Path starts with Forms\ - prepend ..\
+    targetScript := "..\" . targetScript
+}
 
 screenshotPath := A_ScriptDir . "\..\screenshot.png"
 

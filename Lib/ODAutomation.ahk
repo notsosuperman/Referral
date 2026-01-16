@@ -1,309 +1,361 @@
 ; ==============================================================================
-; ODAutomation Library - Open Dental navigation and window management
-; Include: #Include %A_ScriptDir%\..\Lib\ODAutomation.ahk
+; Open Dental Automation Library
+; Window management, navigation, and click helpers for OD automation
 ; ==============================================================================
 
-; Include dependencies
-#Include %A_ScriptDir%\..\Lib\Logging.ahk
+; ==============================================================================
+; Include Logging Library
+; Use A_LineFile to get path relative to THIS file, not the main script
+; ==============================================================================
+#Include %A_LineFile%\..\Logging.ahk
 
 ; ==============================================================================
-; Coordinate Definitions
+; COORDINATE CONFIGURATION
+; All click locations - update these if UI changes
 ; ==============================================================================
 
-; Open Dental - Patient Info section
-global OD_PATIENT_SCROLLBAR := {x: 451, y: 579}
-global OD_REFERRED_FROM := {x: 100, y: 642}
+; Patient Info Panel (main OD window, client coords)
+global OD_PATIENT_SCROLLBAR := {x: 451, y: 579, desc: "Patient Info Scrollbar"}
+global OD_REFERRED_FROM := {x: 100, y: 642, desc: "Referred From Line"}
 
-; Referrals for Patient window
-global REF_REFER_TO_BTN := {x: 62, y: 81}
-global REF_SLIP_BTN := {x: 61, y: 475}
+; "Referrals for Patient" window (client coords)
+global REF_REFER_TO_BTN := {x: 62, y: 81, desc: "Refer To Button"}
+global REF_SLIP_BTN := {x: 61, y: 475, desc: "Referral Slip Button"}
 
-; Referrals search window
-global REF_FIRST_RESULT := {x: 77, y: 107}
+; "Referrals" search window (client coords)
+global REF_FIRST_RESULT := {x: 77, y: 107, desc: "First Search Result"}
 
-; Open Dental mode detection (from Combo Master)
-global ODmodes := {"Appts": {x: 1, y: 82}
+; OD Mode detection pixels (client coords, x=1 for left sidebar)
+global OD_MODES := {"Appts": {x: 1, y: 82}
     , "Family": {x: 1, y: 140}
     , "Account": {x: 1, y: 198}
     , "TxPlan": {x: 1, y: 256}
     , "Chart": {x: 1, y: 314}
     , "Imaging": {x: 1, y: 372}
     , "Manage": {x: 1, y: 430}}
-global ODModeCheckColor := 0xFFFFFF
-global imagingCheckPixel := {x: 1, y: 373}
+global OD_MODE_SELECTED_COLOR := 0xFFFFFF  ; White when tab selected
 
 ; ==============================================================================
-; Input Blocking Functions (from Combo Master)
+; TIMEOUT CONFIGURATION
 ; ==============================================================================
+global OD_WINDOW_TIMEOUT := 3  ; Seconds to wait for windows
+
+; ==============================================================================
+; INPUT BLOCKING
+; ==============================================================================
+global OD_BlockInputActive := false
 
 BlockInputOn()
 {
+    global OD_BlockInputActive
+    OD_BlockInputActive := true
     BlockInput, On
     BlockInput, MouseMove
-    return
+    Checkpoint("BlockInput ON", false)
 }
 
 BlockInputOff()
 {
+    global OD_BlockInputActive
+    OD_BlockInputActive := false
     BlockInput, Off
     BlockInput, MouseMoveOff
-    return
+    Checkpoint("BlockInput OFF", false)
 }
 
 ; ==============================================================================
-; Main Navigation Function
+; WINDOW MANAGEMENT
 ; ==============================================================================
 
-ODNavigate(odWindowTitle, specialistName)
+; Check if any OD sub-window is blocking the main window
+ODHasBlockingWindow()
 {
-    Checkpoint("Starting Open Dental navigation", false)
-    
-    ; Block input during automation
-    BlockInputOn()
-    
-    ; 1. Activate Open Dental main window
-    if (!ODWinActivate(odWindowTitle))
+    ; If OD main is not active but an OD process window is, there's a blocker
+    if !WinActive("Open Dental {")
     {
-        BlockInputOff()
-        Failure("Could not activate Open Dental window. Please close any blocking windows and try again.")
-        return false
+        if WinActive("ahk_exe OpenDental.exe")
+            return true
     }
+    return false
+}
+
+; Activate OD main window, check for blockers
+; Returns: true if successful, false if blocked
+ODActivateMain(expectedTitle := "")
+{
+    ; Try to activate OD main window
+    if (expectedTitle != "")
+        WinActivate, %expectedTitle%
+    else
+        WinActivate, Open Dental {
     
-    ; 2. Ensure Chart view is active
-    if (!ValidateChartView())
-    {
-        BlockInputOff()
-        Failure("Could not switch to Chart view")
-        return false
-    }
+    Sleep, 100
     
-    ; 3. Scroll Patient Info to top
-    Checkpoint("Scrolling patient info to top")
-    ClickAt(OD_PATIENT_SCROLLBAR, "Scroll patient info")
-    Sleep, 200
-    
-    ; 4. Open Referrals for Patient
-    Checkpoint("Opening Referrals for Patient")
-    ClickAt(OD_REFERRED_FROM, "Referred from", 2)  ; Double-click
-    
-    if (!WaitForWindow("Referrals for Patient", 3, "Referrals for Patient window"))
+    ; Check if we actually activated the main window
+    if ODHasBlockingWindow()
         return false
     
-    ; 5. Click Refer To button
-    Checkpoint("Clicking Refer To button")
-    ClickAt(REF_REFER_TO_BTN, "Refer To button")
-    
-    if (!WaitForWindow("Referrals", 3, "Referral search window"))
+    if !WinActive("Open Dental {")
         return false
     
-    ; 6. Search for specialist
-    Checkpoint("Searching for specialist: " . specialistName)
-    SendInput, %specialistName%
-    Sleep, 300
-    
-    ; 7. Select first result
-    Checkpoint("Selecting first search result")
-    ClickAt(REF_FIRST_RESULT, "First search result")
-    Sleep, 200
-    
-    ; 8. Click OK
-    Checkpoint("Confirming specialist selection")
-    Send, !o  ; Alt+O for OK button
-    
-    if (!WaitForWindow("Referrals for Patient", 3, "Referrals for Patient window (confirmation)"))
-        return false
-    
-    ; 9. Open Referral Slip
-    Checkpoint("Opening Referral Slip")
-    ClickAt(REF_SLIP_BTN, "Referral Slip button")
-    
-    if (!WaitForWindow("Fill Sheet", 3, "Fill Sheet window"))
-        return false
-    
-    Success("Navigation to Fill Sheet complete")
-    
-    ; Unblock input before transferring
-    BlockInputOff()
     return true
 }
 
-; ==============================================================================
-; Helper Functions
-; ==============================================================================
-
-; Activate Open Dental main window, check for blocking windows
-ODWinActivate(expectedTitle)
+; Get current OD mode (Chart, Appts, etc)
+ODGetMode()
 {
-    Checkpoint("Activating Open Dental: " . expectedTitle)
+    global OD_MODES
+    global OD_MODE_SELECTED_COLOR
     
-    ; Try to activate the expected window
-    WinActivate, %expectedTitle%
-    Sleep, 300
-    
-    ; Check if it's actually active
-    WinGetTitle, activeTitle, A
-    
-    ; Exact title match - correct patient
-    if (activeTitle = expectedTitle)
-    {
-        Checkpoint("Correct patient window confirmed: " . expectedTitle)
-        return true
-    }
-    
-    ; Check if a different OpenDental.exe window is active (blocking)
-    if (WinActive("ahk_exe OpenDental.exe"))
-    {
-        WinGetTitle, blockingWindow, A
-        
-        ; Check if it's a different patient (wrong OD main window)
-        if (InStr(blockingWindow, "Open Dental {"))
-        {
-            BlockInputOff()
-            Failure("PATIENT MISMATCH!`n`nExpected patient:`n" . expectedTitle . "`n`nCurrent patient:`n" . blockingWindow . "`n`nPlease return to the correct patient chart before submitting.")
-            return false
-        }
-        
-        ; It's a blocking sub-window
-        BlockInputOff()
-        Failure("Open Dental window is blocked by:`n" . blockingWindow . "`n`nPlease close this window and try again.")
-        return false
-    }
-    
-    BlockInputOff()
-    Failure("Could not activate Open Dental window")
-    return false
-}
-
-; Ensure Chart view is active
-ValidateChartView()
-{
-    Checkpoint("Validating Chart view")
-    
-    mode := GetODMode()
-    if (mode = "Chart")
-    {
-        Checkpoint("Already in Chart view")
-        return true
-    }
-    
-    if (mode = "")
-    {
-        BlockInputOff()
-        Failure("Could not detect Open Dental mode")
-        return false
-    }
-    
-    Checkpoint("Switching from " . mode . " to Chart view")
-    SetODMode("Chart")
-    Sleep, 300
-    
-    ; Verify switch worked
-    mode := GetODMode()
-    if (mode = "Chart")
-    {
-        Checkpoint("Successfully switched to Chart view")
-        return true
-    }
-    
-    return false
-}
-
-; Get current Open Dental mode (Chart/Appts/etc) - from Combo Master
-GetODMode()
-{
-    global ODModeCheckColor
-    global ODmodes
-    
-    UnfocusImagingModeFrame()
-    
-    if (!WinActive("Open Dental {"))
-        return ""
+    if !WinActive("Open Dental {")
+        return "NA"
     
     CoordMode, Pixel, Client
-    for mode, coord in ODmodes
+    
+    for mode, coord in OD_MODES
     {
-        PixelGetColor, color, coord.x, coord.y, RGB
-        if (color = ODModeCheckColor)
+        px := coord.x
+        py := coord.y
+        PixelGetColor, color, %px%, %py%, RGB
+        if (color = OD_MODE_SELECTED_COLOR)
             return mode
     }
     
-    return ""
+    return "Unknown"
 }
 
-; Set Open Dental mode (Chart/Appts/etc) - from Combo Master
-SetODMode(modeToSet)
+; Set OD mode (Chart, Appts, etc)
+ODSetMode(modeToSet)
 {
-    global ODmodes
-    global ODModeCheckColor
+    global OD_MODES
+    global OD_MODE_SELECTED_COLOR
     
-    if (!WinActive("ahk_exe OpenDental.exe"))
+    if !WinActive("Open Dental {")
     {
-        Failure("SetODMode failed: Open Dental not active")
-        return false
-    }
-    
-    UnfocusImagingModeFrame()
-    
-    if (!WinActive("Open Dental {"))
-    {
-        Failure("SetODMode failed: Not on main Open Dental window")
+        Checkpoint("ODSetMode failed - OD not active", true)
         return false
     }
     
     CoordMode, Pixel, Client
     CoordMode, Mouse, Client
     
-    x := ODmodes[modeToSet].x
-    y := ODmodes[modeToSet].y
-    
-    PixelGetColor, color, x, y, RGB
-    if (color != ODModeCheckColor)
+    coord := OD_MODES[modeToSet]
+    if (!coord)
     {
-        Click, %x%, %y%
+        Checkpoint("ODSetMode failed - invalid mode: " . modeToSet, false)
+        return false
+    }
+    
+    px := coord.x
+    py := coord.y
+    PixelGetColor, color, %px%, %py%, RGB
+    if (color != OD_MODE_SELECTED_COLOR)
+    {
+        ; Mode not selected, click to select
+        Click, %px%, %py%
         Sleep, 200
+        Checkpoint("ODSetMode clicked " . modeToSet, false)
     }
     
     return true
 }
 
-; Handle imaging mode focus issue - from Combo Master
-UnfocusImagingModeFrame()
+; Check if Chart view is active
+ODIsChartView()
 {
-    global imagingCheckPixel
-    global ODModeCheckColor
-    
-    if (!WinActive("ahk_exe OpenDental.exe"))
-        return
-    
-    CoordMode, Pixel, Screen
-    PixelGetColor, color, imagingCheckPixel.x, imagingCheckPixel.y, RGB
-    if (color = ODModeCheckColor)
-        WinActivate, Open Dental {
-    
-    CoordMode, Pixel, Client
+    return (ODGetMode() = "Chart")
 }
 
-; Click at coordinates with logging
-ClickAt(coordObj, description, clickCount := 1)
+; Ensure Chart view is active
+ODEnsureChartView()
 {
-    CoordMode, Mouse, Client
-    MouseClick,, % coordObj.x, % coordObj.y, %clickCount%
-    Sleep, 50
+    if !ODIsChartView()
+    {
+        Checkpoint("Switching to Chart view", false)
+        return ODSetMode("Chart")
+    }
+    return true
 }
+
+; ==============================================================================
+; WAITING HELPERS
+; ==============================================================================
 
 ; Wait for window with timeout and logging
-WaitForWindow(windowTitle, timeoutSeconds, description)
+; Returns: true if window appeared, false on timeout
+WaitWin(windowTitle, timeoutSeconds := 3, description := "")
 {
-    Checkpoint("Waiting for window: " . windowTitle)
+    if (description = "")
+        description := windowTitle
     
-    WinWaitActive, %windowTitle%,, %timeoutSeconds%
-    if (ErrorLevel)
+    Checkpoint("Waiting for: " . description, false)
+    
+    WinWait, %windowTitle%,, %timeoutSeconds%
+    
+    if ErrorLevel
     {
-        BlockInputOff()
-        Failure(description . " did not appear within " . timeoutSeconds . " seconds")
+        Checkpoint("TIMEOUT waiting for: " . description, true)
         return false
     }
     
-    Checkpoint("Window appeared: " . windowTitle)
+    WinActivate, %windowTitle%
+    Sleep, 100
+    Checkpoint("Found: " . description, true)
+    return true
+}
+
+; Wait for window to be active
+WaitWinActive(windowTitle, timeoutSeconds := 3, description := "")
+{
+    if (description = "")
+        description := windowTitle
+    
+    Checkpoint("Waiting for active: " . description, false)
+    
+    WinWaitActive, %windowTitle%,, %timeoutSeconds%
+    
+    if ErrorLevel
+    {
+        Checkpoint("TIMEOUT waiting for active: " . description, true)
+        return false
+    }
+    
+    Checkpoint("Active: " . description, true)
+    return true
+}
+
+; ==============================================================================
+; CLICK HELPERS
+; ==============================================================================
+
+; Click at coordinate object with logging
+; coordObj: {x: n, y: n, desc: "description"}
+; doubleClick: true for double-click
+ClickAt(coordObj, doubleClick := false)
+{
+    CoordMode, Mouse, Client
+    
+    desc := coordObj.HasKey("desc") ? coordObj.desc : "x" . coordObj.x . " y" . coordObj.y
+    clickType := doubleClick ? "Double-click" : "Click"
+    
+    Checkpoint(clickType . " at: " . desc, false)
+    
+    px := coordObj.x
+    py := coordObj.y
+    if (doubleClick)
+        Click, %px%, %py%, 2
+    else
+        Click, %px%, %py%
+    
+    Sleep, 50
+}
+
+; ==============================================================================
+; PATIENT NAME PARSING
+; ==============================================================================
+
+; Parse patient name from OD window title
+; Title format: "Open Dental {username} - LastName, FirstName ..."
+; Returns: "LastName, FirstName" or empty string if not found
+ParsePatientFromTitle(windowTitle)
+{
+    ; Match pattern: "Open Dental {...} - PatientName"
+    if (RegExMatch(windowTitle, "Open Dental \{[^}]+\} - (.+)", match))
+    {
+        ; Clean up - remove extra info after patient name if any
+        patientName := match1
+        ; Trim any trailing info (like chart number etc)
+        if (InStr(patientName, " ("))
+            patientName := SubStr(patientName, 1, InStr(patientName, " (") - 1)
+        return Trim(patientName)
+    }
+    return ""
+}
+
+; ==============================================================================
+; NAVIGATION TO FILL SHEET
+; Main automation sequence
+; ==============================================================================
+
+; Navigate from OD main window to Fill Sheet
+; specialistName: name to search for in referrals
+; Returns: true if successful, false on any failure
+NavigateToFillSheet(specialistName)
+{
+    global OD_WINDOW_TIMEOUT
+    global OD_PATIENT_SCROLLBAR
+    global OD_REFERRED_FROM
+    global REF_REFER_TO_BTN
+    global REF_FIRST_RESULT
+    global REF_SLIP_BTN
+    
+    Checkpoint("=== Starting Navigation to Fill Sheet ===", false)
+    Checkpoint("Specialist: " . specialistName, false)
+    
+    CoordMode, Mouse, Client
+    
+    ; Step 1: Scroll Patient Info to top
+    Checkpoint("Step 1: Scrolling Patient Info to top", false)
+    ClickAt(OD_PATIENT_SCROLLBAR)
+    Sleep, 200
+    
+    ; Step 2: Double-click Referred From
+    Checkpoint("Step 2: Opening Referrals for Patient", false)
+    ClickAt(OD_REFERRED_FROM, true)
+    
+    ; Step 3: Wait for Referrals for Patient window
+    if !WaitWin("Referrals for Patient", OD_WINDOW_TIMEOUT, "Referrals for Patient window")
+    {
+        Failure("Timeout waiting for 'Referrals for Patient' window", true, true, false)
+        return false
+    }
+    
+    ; Step 4: Click Refer To button
+    Checkpoint("Step 4: Clicking Refer To button", false)
+    ClickAt(REF_REFER_TO_BTN)
+    
+    ; Step 5: Wait for Referrals search window
+    if !WaitWin("Referrals", OD_WINDOW_TIMEOUT, "Referrals search window")
+    {
+        Failure("Timeout waiting for 'Referrals' search window", true, true, false)
+        return false
+    }
+    Sleep, 200
+    
+    ; Step 6: Type specialist name (window already has focus on search)
+    Checkpoint("Step 6: Searching for specialist: " . specialistName, false)
+    SendInput, %specialistName%
+    Sleep, 500  ; Wait for search results
+    
+    ; Step 7: Click first result
+    Checkpoint("Step 7: Selecting first result", false)
+    ClickAt(REF_FIRST_RESULT)
+    Sleep, 100
+    
+    ; Step 8: Press Alt+O to click OK
+    Checkpoint("Step 8: Confirming selection (Alt+O)", false)
+    Send, !o
+    Sleep, 200
+    
+    ; Step 9: Wait for Referrals for Patient to reopen
+    if !WaitWin("Referrals for Patient", OD_WINDOW_TIMEOUT, "Referrals for Patient window (after add)")
+    {
+        Failure("Timeout waiting for 'Referrals for Patient' to reopen", true, true, false)
+        return false
+    }
+    Sleep, 200
+    
+    ; Step 10: Click Referral Slip button
+    Checkpoint("Step 10: Clicking Referral Slip button", false)
+    ClickAt(REF_SLIP_BTN)
+    
+    ; Step 11: Wait for Fill Sheet window
+    if !WaitWin("Fill Sheet", OD_WINDOW_TIMEOUT, "Fill Sheet window")
+    {
+        Failure("Timeout waiting for 'Fill Sheet' window", true, true, false)
+        return false
+    }
+    
+    Checkpoint("=== Navigation Complete - Fill Sheet Ready ===", true)
     return true
 }

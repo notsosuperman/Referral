@@ -9,10 +9,8 @@
 #SingleInstance, Force
 SetWorkingDir %A_ScriptDir%
 
-; Include FormTransfer library (which includes Logging)
+; Include FormTransfer library
 #Include %A_ScriptDir%\..\Lib\FormTransfer.ahk
-
-Checkpoint("HillsboroOMFS form script started", false)
 
 ; ==============================================================================
 ; Global Variables for Form Data
@@ -20,7 +18,6 @@ Checkpoint("HillsboroOMFS form script started", false)
 ; Display only (set externally, not editable)
 global OfficeName := "Hillsboro Oral & Maxillofacial Surgery"
 global PatientName := ""  ; Will be set when form is launched
-global ODWindowTitle := ""  ; Open Dental window title for validation
 
 ; GUI Control variables (required for GuiControl updates)
 global TxtOfficeName := ""
@@ -70,34 +67,12 @@ global txtManagementNotes := ""
 ; ==============================================================================
 ; Build the GUI
 ; ==============================================================================
-
-; Parse command-line arguments
-; Expected: [patientName] [odWindowTitle] [presetName]
-Checkpoint("Parsing command-line arguments", false)
-if (A_Args.Length() >= 2)
-{
-    PatientName := A_Args[1]
-    ODWindowTitle := A_Args[2]
-    Checkpoint("Args parsed - Patient: " . PatientName, false)
-}
-if (A_Args.Length() >= 3)
-{
-    ; Preset name provided as 3rd arg
-    PS_PresetOverride := A_Args[3]
-    Checkpoint("Preset override: " . PS_PresetOverride, false)
-}
-
-Checkpoint("Calling BuildReferralForm", false)
 BuildReferralForm()
-Checkpoint("Calling InitPresets", false)
 InitPresets()
-Checkpoint("Form initialization complete", false)
 return
 
 BuildReferralForm()
 {
-    Checkpoint("BuildReferralForm started", false)
-    
     ; Set GUI defaults
     Gui, Main:New, +Resize +MinSize500x600, Hillsboro OMFS Referral Slip
     Gui, Main:Color, FFFFFF
@@ -251,9 +226,7 @@ BuildReferralForm()
     Gui, Main:Add, Button, x460 y%yPos% w140 h35 gBtnSubmit Default, Submit Referral
     
     ; Show the GUI
-    Checkpoint("About to show GUI", false)
     Gui, Main:Show, w620 h750
-    Checkpoint("GUI shown", false)
 }
 
 ; ==============================================================================
@@ -332,8 +305,8 @@ BtnSubmit:
     ; Hide form during transfer
     Gui, Main:Hide
     
-    ; Transfer to Open Dental (with navigation if OD window title available)
-    FormTransfer("HillsboroOMFS", formData, ODWindowTitle)
+    ; Transfer to Open Dental
+    FormTransfer("HillsboroOMFS", formData)
     
     ; Close form (no message)
     ExitApp

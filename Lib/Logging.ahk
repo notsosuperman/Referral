@@ -1,96 +1,97 @@
 ; ==============================================================================
-; Logging Library - Debug logging for automation scripts
-; Include: #Include %A_ScriptDir%\..\Lib\Logging.ahk
+; Logging Library for Dental Referral Automation
+; Provides debug logging, checkpoints, and error handling
 ; ==============================================================================
 
 ; ==============================================================================
 ; Configuration
 ; ==============================================================================
-global LOG_TO_CONSOLE := true   ; Show ToolTips for debugging
-global LOG_TO_FILE := true       ; Write to file for troubleshooting
-global LOG_FILE_PATH := A_ScriptDir . "\..\Logs\referral.log"
+global LOG_PATH := A_ScriptDir . "\..\Logs"
+global LOG_FILE := LOG_PATH . "\referral.log"
+global LOG_FAILURES_FILE := LOG_PATH . "\referral_failures.log"
 
 ; ==============================================================================
-; Logging Functions
+; Ensure log directory exists
 ; ==============================================================================
+if (!InStr(FileExist(LOG_PATH), "D"))
+    FileCreateDir, %LOG_PATH%
 
-; Log a checkpoint (progress indicator)
+; ==============================================================================
+; LogEvent - Write timestamped entry to log file
+; ==============================================================================
+LogEvent(logFile, message)
+{
+    FormatTime, timestamp,, yyyy-MM-dd HH:mm:ss
+    computerName := A_ComputerName
+    FileAppend, %timestamp% | %computerName% | %message%`n, %logFile%
+}
+
+; ==============================================================================
+; Checkpoint - Log progress point
+; logWindow: if true, appends current window title to message
+; ==============================================================================
 Checkpoint(message, logWindow := true)
 {
+    global LOG_FILE
+    
     if (logWindow)
     {
         WinGetTitle, currentTitle, A
         message := message . " | Window: " . currentTitle
     }
     
-    LogEvent("CHECKPOINT", message)
+    LogEvent(LOG_FILE, "CHECKPOINT: " . message)
 }
 
-; Log a failure (error)
+; ==============================================================================
+; Failure - Log failure, optionally show message box and/or exit
+; ==============================================================================
 Failure(message, logWindow := true, showMsgBox := true, exitScript := true)
 {
+    global LOG_FILE
+    global LOG_FAILURES_FILE
+    
+    ; Unblock input before showing error
+    BlockInput, Off
+    BlockInput, MouseMoveOff
+    
     if (logWindow)
     {
         WinGetTitle, currentTitle, A
         message := message . " | Window: " . currentTitle
     }
     
-    LogEvent("FAILURE", message)
+    LogEvent(LOG_FAILURES_FILE, message)
+    LogEvent(LOG_FILE, "FAILURE: " . message)
     
     if (showMsgBox)
-        MsgBox, 48, Automation Error, %message%
+        MsgBox, 48, Referral Error, %message%
     
     if (exitScript)
-    {
-        ; Note: BlockInputOff() should be called before Failure() in most cases
-        ; This is a safety fallback
-        BlockInput, Off
-        BlockInput, MouseMoveOff
         ExitApp
-    }
 }
 
-; Log a success
+; ==============================================================================
+; Success - Log successful completion
+; ==============================================================================
 Success(message, logWindow := true)
 {
+    global LOG_FILE
+    
     if (logWindow)
     {
         WinGetTitle, currentTitle, A
         message := message . " | Window: " . currentTitle
     }
     
-    LogEvent("SUCCESS", message)
+    LogEvent(LOG_FILE, "SUCCESS: " . message)
 }
 
-; Internal: Write log entry
-LogEvent(level, message)
+; ==============================================================================
+; DebugLog - Simple debug message (always logs, no window info)
+; ==============================================================================
+DebugLog(message)
 {
-    global LOG_TO_CONSOLE
-    global LOG_TO_FILE
-    global LOG_FILE_PATH
-    
-    FormatTime, timestamp,, yyyy-MM-dd HH:mm:ss
-    logLine := timestamp . " [" . level . "] " . message
-    
-    ; Console output (ToolTip)
-    if (LOG_TO_CONSOLE)
-    {
-        ToolTip, %logLine%
-        SetTimer, RemoveLogTooltip, -2000
-    }
-    
-    ; File output
-    if (LOG_TO_FILE)
-    {
-        ; Create directory if needed
-        SplitPath, LOG_FILE_PATH,, logDir
-        if (!InStr(FileExist(logDir), "D"))
-            FileCreateDir, %logDir%
-        
-        FileAppend, %logLine%`n, %LOG_FILE_PATH%
-    }
+    global LOG_FILE
+    LogEvent(LOG_FILE, "DEBUG: " . message)
 }
-
-RemoveLogTooltip:
-    ToolTip
-return

@@ -1,0 +1,58 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build All (Compile to EXE)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/Build.ps1"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
+        },
+        {
+            "label": "Run Launcher (Dev Mode)",
+            "type": "shell",
+            "command": "C:/Program Files/AutoHotkey/v1.1.37.02/AutoHotkeyU64.exe",
+            "args": [
+                "${workspaceFolder}/Launcher.ahk"
+            ],
+            "problemMatcher": [],
+            "group": "none"
+        },
+        {
+            "label": "Run Launcher (Compiled)",
+            "type": "shell",
+            "command": "${workspaceFolder}/Build/Launcher.exe",
+            "problemMatcher": [],
+            "group": "none",
+            "dependsOn": "Build All (Compile to EXE)"
+        },
+        {
+            "label": "Clean Build Directory",
+            "type": "shell",
+            "command": "Remove-Item",
+            "args": [
+                "-Recurse",
+                "-Force",
+                "${workspaceFolder}/Build",
+                "-ErrorAction",
+                "SilentlyContinue"
+            ],
+            "problemMatcher": [],
+            "group": "none"
+        }
+    ]
+}

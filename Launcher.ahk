@@ -182,6 +182,13 @@ LaunchForm(formPath, presetName := "")
     global LauncherPatientName
     global LauncherODTitle
     
+    ; Detect if we're compiled and adjust form extension
+    if (A_IsCompiled)
+    {
+        ; Running as .exe - launch form .exes
+        formPath := StrReplace(formPath, ".ahk", ".exe")
+    }
+    
     if !FileExist(formPath)
     {
         MsgBox, 48, Launcher, File not found: %formPath%

@@ -37,22 +37,14 @@ Referral form for **Farham**
 
 ## Usage
 
-### Running the Launcher
-The launcher automatically captures patient context from Open Dental:
+### Development Mode
 
+**Running the Launcher:**
 ```powershell
 AutoHotkeyU64.exe Launcher.ahk
 ```
 
-**Behavior:**
-- If Open Dental is found but not active: Shows tooltip, waits for you to activate OD and press F1
-- If Open Dental is not found: Uses test data (`Smith, John`) for development/testing
-- Captures patient name from OD window title
-- Passes patient context to forms automatically
-
-### Running Forms Directly
-Forms can be run standalone (without launcher) for testing:
-
+**Running Forms Directly:**
 ```powershell
 # Standalone mode - manual F1 workflow
 AutoHotkeyU64.exe Forms\HillsboroOMFS.ahk
@@ -60,6 +52,32 @@ AutoHotkeyU64.exe Forms\HillsboroOMFS.ahk
 # With preset
 AutoHotkeyU64.exe Forms\HillsboroOMFS.ahk "" "" "Wisdom Teeth"
 ```
+
+### Production Deployment
+
+**Building Executables:**
+
+Option 1 - VS Code (Recommended):
+1. Press `Ctrl+Shift+B` or `Cmd+Shift+B`
+2. Select "Build All (Compile to EXE)"
+
+Option 2 - Terminal:
+```powershell
+powershell -ExecutionPolicy Bypass -File Build.ps1
+```
+
+Output: `Build\` folder with all executables
+
+**Deploying to Production:**
+1. Copy entire `Build\` folder to target location (e.g., `O:\Script\`)
+2. Run `Launcher.exe` on target machine
+3. No AutoHotkey installation required!
+
+**Behavior:**
+- If Open Dental is found but not active: Shows tooltip, waits for you to activate OD and press F1
+- If Open Dental is not found: Uses test data (`Smith, John`) for development/testing
+- Captures patient name from OD window title
+- Passes patient context to forms automatically
 
 ### Running Tools from Terminal
 ```powershell

@@ -38,18 +38,26 @@ CaptureODContext()
     global LauncherODTitle
     global LauncherReady
     
-    ; Check if Open Dental is active
-    if WinActive("Open Dental {")
+    ; Check if Open Dental window exists
+    if WinExist("Open Dental {")
     {
-        CaptureODContextNow()
+        ; Try to activate it if it exists
+        if WinActive("Open Dental {")
+            CaptureODContextNow()
+        else
+        {
+            ; OD exists but not active - show tooltip and wait for F1
+            tipMsg := "Open Dental is not active.`n`nActivate Open Dental with patient chart open,`nthen press F1."
+            ToolTip, %tipMsg%, 100, 100
+        }
         return
     }
     
-    ; OD not active - show tooltip and wait for F1
-    ToolTip, Open Dental is not active.`n`nPlease activate Open Dental with the`ndesired patient's chart open,`nthen press F1 to continue., 100, 100
-    
-    ; Don't show GUI yet - wait for F1
-    return
+    ; Open Dental not found - use test data
+    LauncherPatientName := "Smith, John"
+    LauncherODTitle := "Open Dental {testuser} - Smith, John"
+    LauncherReady := true
+    ShowLauncherGUI()
 }
 
 CaptureODContextNow()
@@ -86,9 +94,9 @@ CaptureODContextNow()
     }
     else
     {
-        ; OD still not active - continue without patient context
-        LauncherPatientName := ""
-        LauncherODTitle := ""
+        ; OD still not active - use test data
+        LauncherPatientName := "Smith, John"
+        LauncherODTitle := "Open Dental {testuser} - Smith, John"
     }
     
     LauncherReady := true

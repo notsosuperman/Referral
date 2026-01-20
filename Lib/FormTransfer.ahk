@@ -396,6 +396,50 @@ FT_FindIndex(value, options)
 }
 
 ; ==============================================================================
+; ABSTRACTED GetFormData() - Reads field names from Mappings.ini
+; ==============================================================================
+GetFormData()
+{
+    global FT_ConfigPath
+    global PS_FormName
+    
+    ; Ensure form name is set
+    if (PS_FormName = "")
+        PS_FormName := PS_GetFormName()
+    
+    ; Submit GUI to update variables
+    Gui, Main:Submit, NoHide
+    
+    ; Check if mappings exist
+    IniRead, sectionTest, %FT_ConfigPath%, %PS_FormName%
+    if (sectionTest = "ERROR" || sectionTest = "")
+    {
+        MsgBox, 16, Error, Mappings.ini does not contain data for form: %PS_FormName%`n`nPlease run CoordHelper first to generate mappings.
+        return {}
+    }
+    
+    ; Build data object from mappings
+    data := {}
+    mappings := FT_LoadMappings(PS_FormName)
+    
+    for index, mapping in mappings
+    {
+        ; Skip metadata fields
+        if (mapping.type = "metadata")
+            continue
+        
+        varName := mapping.var
+        
+        ; Dynamically access the variable value
+        ; Use %% for dynamic variable access
+        value := %varName%
+        data[varName] := value
+    }
+    
+    return data
+}
+
+; ==============================================================================
 ; PRESET SYSTEM FUNCTIONS
 ; ==============================================================================
 

@@ -249,30 +249,3 @@ SetOfficeName(name)
     global OfficeName := name
     GuiControl, Main:, TxtOfficeName, %name%
 }
-
-; Get all form data as an object (for automation)
-GetFormData()
-{
-    Gui, Main:Submit, NoHide
-    
-    data := {}
-    data.ReferralSource := ReferralSource
-    data.ReferringTo := "Dr. Patrick Corning"
-    
-    ; Treatments
-    data.chkImplantTreatment := chkImplantTreatment
-    data.chkPeriodontalTreatment := chkPeriodontalTreatment
-    data.chkRecessionTreatment := chkRecessionTreatment
-    data.chkCrownLengthening := chkCrownLengthening
-    
-    ; Radiographs
-    data.chkRadiographsYes := chkRadiographsYes
-    data.chkRadiographsNo := chkRadiographsNo
-    data.chkWillSend := chkWillSend
-    data.chkPatientWillBring := chkPatientWillBring
-    
-    ; Remarks
-    data.txtRemarks := txtRemarks
-    
-    return data
-}

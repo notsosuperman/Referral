@@ -223,26 +223,3 @@ SetOfficeName(name)
     global OfficeName := name
     GuiControl, Main:, TxtOfficeName, %name%
 }
-
-; Get all form data as an object (for automation)
-; Key names MUST match the GUI variable names exactly
-GetFormData()
-{
-    Gui, Main:Submit, NoHide
-    
-    data := {}
-    data.ReferralSource := ReferralSource
-    
-    ; Notes
-    data.txtNotes := txtNotes
-    
-    ; CBCT
-    data.chkCBCTYes := chkCBCTYes
-    data.chkCBCTNo := chkCBCTNo
-    
-    ; PA
-    data.chkPAYes := chkPAYes
-    data.chkPANo := chkPANo
-    
-    return data
-}

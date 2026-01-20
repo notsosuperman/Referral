@@ -37,13 +37,28 @@ Referral form for **Farham**
 
 ## Usage
 
-### Running a Form
+### Running the Launcher
+The launcher automatically captures patient context from Open Dental:
+
 ```powershell
-# Double-click the .ahk file, or run from terminal:
+AutoHotkeyU64.exe Launcher.ahk
+```
+
+**Behavior:**
+- If Open Dental is found but not active: Shows tooltip, waits for you to activate OD and press F1
+- If Open Dental is not found: Uses test data (`Smith, John`) for development/testing
+- Captures patient name from OD window title
+- Passes patient context to forms automatically
+
+### Running Forms Directly
+Forms can be run standalone (without launcher) for testing:
+
+```powershell
+# Standalone mode - manual F1 workflow
 AutoHotkeyU64.exe Forms\HillsboroOMFS.ahk
 
-# Or use the Launcher
-AutoHotkeyU64.exe Launcher.ahk
+# With preset
+AutoHotkeyU64.exe Forms\HillsboroOMFS.ahk "" "" "Wisdom Teeth"
 ```
 
 ### Running Tools from Terminal
@@ -56,13 +71,15 @@ AutoHotkeyU64.exe Tools\CoordHelper.ahk Farham.ahk
 ```
 
 ### Utility Functions
-Both forms include helper functions for external automation:
+All forms include helper functions:
 
 ```ahk
 SetPatientName("Smith, John")       ; Set patient name display
 SetOfficeName("Custom Office Name")  ; Change office name
-GetFormData()                        ; Returns object with all form values
+GetFormData()                        ; Returns object with all form values (reads from Mappings.ini)
 ```
+
+**Important:** `GetFormData()` now automatically reads field names from `Mappings.ini`, so you must run `CoordHelper.ahk` for each form before submitting. If mappings are missing, a user-friendly error will appear.
 
 ## Development Tools
 

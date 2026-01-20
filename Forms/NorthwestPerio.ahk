@@ -111,12 +111,12 @@ BuildReferralForm()
     
     Gui, Main:Font, s10 Normal, Arial
     yPos += 24
-    Gui, Main:Add, CheckBox, x20 y%yPos% w80 vchkRadiographsYes gRadiographsYesNoChanged, Yes
-    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w80 vchkRadiographsNo gRadiographsYesNoChanged, No
+    Gui, Main:Add, CheckBox, x20 y%yPos% w80 vchkRadiographsYes, Yes
+    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w80 vchkRadiographsNo, No
     
     yPos += 24
-    Gui, Main:Add, CheckBox, x20 y%yPos% w120 vchkWillSend gRadiographsSendChanged, Will Send
-    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w150 vchkPatientWillBring gRadiographsSendChanged, Patient Will Bring
+    Gui, Main:Add, CheckBox, x20 y%yPos% w120 vchkWillSend, Will Send
+    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w150 vchkPatientWillBring, Patient Will Bring
     
     ; ===========================================================================
     ; Remarks
@@ -151,65 +151,12 @@ BuildReferralForm()
 ; Event Handlers
 ; ==============================================================================
 
-RadiographsYesNoChanged:
-    Gui, Main:Submit, NoHide
-    ; Make Yes/No mutually exclusive
-    if (A_GuiControl = "chkRadiographsYes")
-    {
-        if (chkRadiographsYes)
-            GuiControl, Main:, chkRadiographsNo, 0
-    }
-    else if (A_GuiControl = "chkRadiographsNo")
-    {
-        if (chkRadiographsNo)
-            GuiControl, Main:, chkRadiographsYes, 0
-    }
-return
-
-RadiographsSendChanged:
-    Gui, Main:Submit, NoHide
-    ; Make Will Send / Patient Will Bring mutually exclusive
-    if (A_GuiControl = "chkWillSend")
-    {
-        if (chkWillSend)
-            GuiControl, Main:, chkPatientWillBring, 0
-    }
-    else if (A_GuiControl = "chkPatientWillBring")
-    {
-        if (chkPatientWillBring)
-            GuiControl, Main:, chkWillSend, 0
-    }
-return
-
 BtnClearForm:
-    ; Clear referral source
-    GuiControl, Main:Choose, ReferralSource, 0
-    
-    ; Clear checkboxes - Treatments
-    GuiControl, Main:, chkImplantTreatment, 0
-    GuiControl, Main:, chkPeriodontalTreatment, 0
-    GuiControl, Main:, chkRecessionTreatment, 0
-    GuiControl, Main:, chkCrownLengthening, 0
-    
-    ; Clear checkboxes - Radiographs
-    GuiControl, Main:, chkRadiographsYes, 0
-    GuiControl, Main:, chkRadiographsNo, 0
-    GuiControl, Main:, chkWillSend, 0
-    GuiControl, Main:, chkPatientWillBring, 0
-    
-    ; Clear remarks
-    GuiControl, Main:, txtRemarks,
+    ClearForm()
 return
 
 BtnSubmit:
     Gui, Main:Submit, NoHide
-    
-    ; Validate required fields
-    if (ReferralSource = "")
-    {
-        MsgBox, 48, Validation Error, Please select a referring dentist.
-        return
-    }
     
     ; Get form data
     formData := GetFormData()

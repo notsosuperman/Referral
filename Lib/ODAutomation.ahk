@@ -322,10 +322,19 @@ NavigateToFillSheet(specialistName)
     }
     Sleep, 200
     
-    ; Step 6: Type specialist name (window already has focus on search)
+    ; Step 6: Paste specialist name (window already has focus on search)
     Checkpoint("Step 6: Searching for specialist: " . specialistName, false)
-    SendInput, %specialistName%
-    Sleep, 500  ; Wait for search results
+    
+    ; Use clipboard for instant paste
+    ClipboardBackup := ClipboardAll
+    Clipboard := specialistName
+    ClipWait, 1
+    Send, ^v
+    Sleep, 300
+    Clipboard := ClipboardBackup
+    ClipboardBackup := ""
+    
+    Sleep, 200  ; Wait for search results
     
     ; Step 7: Click first result
     Checkpoint("Step 7: Selecting first result", false)

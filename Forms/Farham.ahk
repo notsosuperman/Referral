@@ -98,16 +98,16 @@ BuildReferralForm()
     yPos += 10
     Gui, Main:Font, s10 Normal, Arial
     Gui, Main:Add, Text, x20 y%yPos% w150 h22 +0x200, Was a CBCT taken?
-    Gui, Main:Add, CheckBox, x180 y%yPos% w50 vchkCBCTYes gCBCTChanged, Y
-    Gui, Main:Add, CheckBox, x240 y%yPos% w50 vchkCBCTNo gCBCTChanged, N
+    Gui, Main:Add, CheckBox, x180 y%yPos% w50 vchkCBCTYes, Y
+    Gui, Main:Add, CheckBox, x240 y%yPos% w50 vchkCBCTNo, N
     
     ; ===========================================================================
     ; PA Question
     ; ===========================================================================
     yPos += 28
     Gui, Main:Add, Text, x20 y%yPos% w150 h22 +0x200, Was PA taken?
-    Gui, Main:Add, CheckBox, x180 y%yPos% w50 vchkPAYes gPAChanged, Y
-    Gui, Main:Add, CheckBox, x240 y%yPos% w50 vchkPANo gPAChanged, N
+    Gui, Main:Add, CheckBox, x180 y%yPos% w50 vchkPAYes, Y
+    Gui, Main:Add, CheckBox, x240 y%yPos% w50 vchkPANo, N
     
     ; ===========================================================================
     ; Action Buttons
@@ -129,61 +129,12 @@ BuildReferralForm()
 ; Event Handlers
 ; ==============================================================================
 
-CBCTChanged:
-    Gui, Main:Submit, NoHide
-    ; Make Y/N mutually exclusive
-    if (A_GuiControl = "chkCBCTYes")
-    {
-        if (chkCBCTYes)
-            GuiControl, Main:, chkCBCTNo, 0
-    }
-    else if (A_GuiControl = "chkCBCTNo")
-    {
-        if (chkCBCTNo)
-            GuiControl, Main:, chkCBCTYes, 0
-    }
-return
-
-PAChanged:
-    Gui, Main:Submit, NoHide
-    ; Make Y/N mutually exclusive
-    if (A_GuiControl = "chkPAYes")
-    {
-        if (chkPAYes)
-            GuiControl, Main:, chkPANo, 0
-    }
-    else if (A_GuiControl = "chkPANo")
-    {
-        if (chkPANo)
-            GuiControl, Main:, chkPAYes, 0
-    }
-return
-
 BtnClearForm:
-    ; Clear referral source
-    GuiControl, Main:Choose, ReferralSource, 0
-    
-    ; Clear notes
-    GuiControl, Main:, txtNotes,
-    
-    ; Clear CBCT checkboxes
-    GuiControl, Main:, chkCBCTYes, 0
-    GuiControl, Main:, chkCBCTNo, 0
-    
-    ; Clear PA checkboxes
-    GuiControl, Main:, chkPAYes, 0
-    GuiControl, Main:, chkPANo, 0
+    ClearForm()
 return
 
 BtnSubmit:
     Gui, Main:Submit, NoHide
-    
-    ; Validate required fields
-    if (ReferralSource = "")
-    {
-        MsgBox, 48, Validation Error, Please select a referring doctor.
-        return
-    }
     
     ; Get form data
     formData := GetFormData()

@@ -109,8 +109,8 @@ BuildReferralForm()
     ; Who Calls (on same row)
     ; ===========================================================================
     yPos += 10
-    Gui, Main:Add, CheckBox, x20 y%yPos% w150 h22 vchkPleaseCallPatient gWhoCallsChanged, Please call patient
-    Gui, Main:Add, CheckBox, x200 y%yPos% w230 h22 vchkPatientWillCall gWhoCallsChanged Checked, Patient will call for appointment
+    Gui, Main:Add, CheckBox, x20 y%yPos% w150 h22 vchkPleaseCallPatient, Please call patient
+    Gui, Main:Add, CheckBox, x200 y%yPos% w230 h22 vchkPatientWillCall Checked, Patient will call for appointment
     
     ; ===========================================================================
     ; Teeth / Area to be Treated
@@ -233,71 +233,12 @@ BuildReferralForm()
 ; Event Handlers
 ; ==============================================================================
 
-WhoCallsChanged:
-    Gui, Main:Submit, NoHide
-    ; Make these mutually exclusive
-    if (A_GuiControl = "chkPleaseCallPatient")
-    {
-        if (chkPleaseCallPatient)
-            GuiControl, Main:, chkPatientWillCall, 0
-    }
-    else if (A_GuiControl = "chkPatientWillCall")
-    {
-        if (chkPatientWillCall)
-            GuiControl, Main:, chkPleaseCallPatient, 0
-    }
-return
-
 BtnClearForm:
-    ; Clear referral source
-    GuiControl, Main:Choose, ReferralSource, 0
-    GuiControl, Main:, TeethAreaToTreat,
-    
-    ; Clear checkboxes - Procedures
-    GuiControl, Main:, chkExtraction, 0
-    GuiControl, Main:, chkDiscussImplants, 0
-    GuiControl, Main:, chkBiopsyExcision, 0
-    GuiControl, Main:, chkProcedureOther, 0
-    GuiControl, Main:, txtProcedureOther,
-    GuiControl, Main:, chkConeBeamCT, 0
-    GuiControl, Main:, chkAlveoloplasty, 0
-    GuiControl, Main:, chkFrenectomy, 0
-    GuiControl, Main:, chkExposureBond, 0
-    GuiControl, Main:, chkIncisionDrainage, 0
-    
-    ; Clear checkboxes - Consultations
-    GuiControl, Main:, chkDentalImplants, 0
-    GuiControl, Main:, chkSinusLift, 0
-    GuiControl, Main:, chkBoneGrafting, 0
-    GuiControl, Main:, chkFacialTrauma, 0
-    GuiControl, Main:, chkConsultOther, 0
-    GuiControl, Main:, txtConsultOther,
-    GuiControl, Main:, chkOralPathology, 0
-    GuiControl, Main:, chkSoftTissueGrafting, 0
-    GuiControl, Main:, chkSkinLesions, 0
-    
-    ; Clear checkboxes - Radiographs
-    GuiControl, Main:, chkEnclosedEmailed, 0
-    GuiControl, Main:, chkGivenToPatient, 0
-    GuiControl, Main:, chkTakeNewOnes, 0
-    
-    ; Reset who calls
-    GuiControl, Main:, chkPleaseCallPatient, 0
-    GuiControl, Main:, chkPatientWillCall, 1
-    
-    ; Clear notes
-    GuiControl, Main:, txtManagementNotes,
+    ClearForm()
 return
 
 BtnSubmit:
     Gui, Main:Submit, NoHide
-    
-    ; Validate required fields
-    if (ReferralSource = "")
-    {
-        MsgBox, 48, Validation Error, Please select a referral source.
-        return
-    }
     
     ; Get form data
     formData := GetFormData()

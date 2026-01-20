@@ -440,6 +440,49 @@ GetFormData()
 }
 
 ; ==============================================================================
+; ABSTRACTED ClearForm() - Clears all form fields using Mappings.ini
+; ==============================================================================
+ClearForm()
+{
+    global FT_ConfigPath
+    global PS_FormName
+    
+    ; Ensure form name is set
+    if (PS_FormName = "")
+        PS_FormName := PS_GetFormName()
+    
+    ; Load mappings
+    mappings := FT_LoadMappings(PS_FormName)
+    
+    for index, mapping in mappings
+    {
+        ; Skip metadata fields
+        if (mapping.type = "metadata")
+            continue
+        
+        varName := mapping.var
+        fieldType := mapping.type
+        
+        ; Clear based on type
+        if (fieldType = "dropdown")
+        {
+            ; Reset dropdown to no selection
+            GuiControl, Main:Choose, %varName%, 0
+        }
+        else if (fieldType = "checkbox")
+        {
+            ; Uncheck checkbox
+            GuiControl, Main:, %varName%, 0
+        }
+        else if (fieldType = "textfield" || fieldType = "multiline")
+        {
+            ; Clear text
+            GuiControl, Main:, %varName%,
+        }
+    }
+}
+
+; ==============================================================================
 ; PRESET SYSTEM FUNCTIONS
 ; ==============================================================================
 

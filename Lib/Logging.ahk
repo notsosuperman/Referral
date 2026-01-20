@@ -6,7 +6,9 @@
 ; ==============================================================================
 ; Configuration
 ; ==============================================================================
-global LOG_PATH := A_ScriptDir . "\..\Logs"
+; Use A_ScriptDir of the MAIN script (not this library)
+; When included, A_ScriptDir refers to the main script's directory
+global LOG_PATH := A_ScriptDir . "\Logs"
 global LOG_FILE := LOG_PATH . "\referral.log"
 global LOG_FAILURES_FILE := LOG_PATH . "\referral_failures.log"
 

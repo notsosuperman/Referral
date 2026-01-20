@@ -256,22 +256,45 @@ Referral/
 ├── Forms/                     # Referral form scripts
 │   ├── HillsboroOMFS.ahk      # Hillsboro OMFS referral form
 │   ├── NorthwestPerio.ahk     # Northwest Perio referral form
-│   └── Farham.ahk             # Farham referral form
+│   ├── Farham.ahk             # Farham referral form
+│   └── Logs/                  # Form logs (auto-created)
 ├── Config/                    # Configuration files
 │   ├── Mappings.ini           # Control coordinates for all forms
 │   └── Presets.ini            # Form presets (auto-fill values)
 ├── Lib/                       # Shared libraries
-│   └── FormTransfer.ahk       # Transfer automation + preset system
+│   ├── FormTransfer.ahk       # Transfer automation + preset system
+│   ├── ODAutomation.ahk       # Open Dental navigation
+│   └── Logging.ahk            # Debug logging functions
 ├── Tools/                     # Development/setup tools
 │   ├── ScreenshotHelper.ahk   # Capture form screenshots
 │   └── CoordHelper.ahk        # Gather Open Dental coordinates
 ├── Docs/                      # Documentation
 │   ├── PLANNING.md            # Architecture and build plan
-│   └── PRESET_SYSTEM.md       # Preset system documentation
+│   ├── PRESET_SYSTEM.md       # Preset system documentation
+│   └── OD_NAVIGATION_PLAN.md  # Open Dental automation plan
+├── Resources/                 # Reference code
+│   ├── Combo Master.ahk       # Pattern reference
+│   └── iTeroClick.ahk         # Pattern reference
 ├── Open Dental Sheets xmls/   # Source XML files
 │   ├── Hillsboro OMFS
-│   └── Northwest Perio
-├── Launcher.ahk               # Main menu (future)
+│   ├── Northwest Perio
+│   └── Farham
+├── Launcher.ahk               # Main menu
+├── Logs/                      # Launcher logs (auto-created)
 ├── screenshot.png             # Latest screenshot (auto-generated)
 └── README.md                  # This file
 ```
+
+### Logging
+
+Logs are created relative to the **main script** being run:
+- Running `Forms\Farham.ahk` → Creates `Forms\Logs\referral.log`
+- Running `Launcher.ahk` → Creates `Logs\referral.log`
+
+This means when deployed to `O:\Script\`, logs will automatically be in `O:\Script\Logs\` (no hardcoding needed).
+
+### Hotkeys
+
+- **Esc**: Exit script immediately (works even during automation with BlockInput)
+- **F1**: Capture Open Dental context (Launcher only, when OD not initially active)
+- **Ctrl+Shift+S**: Save current form state as preset

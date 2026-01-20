@@ -32,6 +32,13 @@ F1::
     }
 return
 
+; ==============================================================================
+; Hotkey for Esc (exit launcher)
+; ==============================================================================
+$Esc::
+    ExitApp
+return
+
 CaptureODContext()
 {
     global LauncherPatientName

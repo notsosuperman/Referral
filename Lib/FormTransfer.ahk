@@ -47,6 +47,12 @@ FT_Abort:
     FT_Aborted := true
 return
 
+; Global Esc handler - exits script without sending Esc through
+; $ prefix prevents it from triggering itself
+$Esc::
+    Failure("User pressed Esc - aborting automation", true, false, true)
+return
+
 PS_SavePresetHotkey:
     PS_PromptAndSavePreset()
 return

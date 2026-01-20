@@ -4,6 +4,7 @@
 ; WINDOW_TITLE: Farham Referral Slip
 ; SPECIALIST_NAME: Endo - Wolfe Dental Cedar Mill
 ; FORM_NAME: Farham
+; DISPLAY_NAME: Endo - Wolfe Dental Cedar Mill
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force

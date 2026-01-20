@@ -4,6 +4,7 @@
 ; WINDOW_TITLE: Hillsboro OMFS Referral Slip
 ; SPECIALIST_NAME: OS - Hillsboro OMFS
 ; FORM_NAME: HillsboroOMFS
+; DISPLAY_NAME: OS - Hillsboro OMFS
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force

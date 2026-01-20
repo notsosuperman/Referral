@@ -46,13 +46,24 @@ New-Item -Path $BUILD_DIR -ItemType Directory -Force | Out-Null
 New-Item -Path "$BUILD_DIR\Forms" -ItemType Directory -Force | Out-Null
 Write-Success "Created $BUILD_DIR directory"
 
-# Compile Launcher
-Write-Step "Compiling Launcher..."
+# Compile Launchers
+Write-Step "Compiling Launchers..."
+
+# Compile original Launcher (legacy/backup)
 & $AHK_COMPILER /in "Launcher.ahk" /out "$BUILD_DIR\Launcher.exe" | Out-Null
 if ($LASTEXITCODE -eq 0) {
-    Write-Success "Launcher.exe"
+    Write-Success "Launcher.exe (legacy)"
 } else {
     Write-Error "Failed to compile Launcher.ahk"
+    exit 1
+}
+
+# Compile dynamic Launcher (new default)
+& $AHK_COMPILER /in "LauncherDynamic.ahk" /out "$BUILD_DIR\LauncherDynamic.exe" | Out-Null
+if ($LASTEXITCODE -eq 0) {
+    Write-Success "LauncherDynamic.exe (dynamic)"
+} else {
+    Write-Error "Failed to compile LauncherDynamic.ahk"
     exit 1
 }
 

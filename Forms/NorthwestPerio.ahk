@@ -4,6 +4,7 @@
 ; WINDOW_TITLE: Northwest Periodontics Referral Slip
 ; SPECIALIST_NAME: Perio - Northwest Periodontics
 ; FORM_NAME: NorthwestPerio
+; DISPLAY_NAME: Perio - Northwest Periodontics
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force

@@ -251,6 +251,42 @@ ClickAt(coordObj, doubleClick := false)
 }
 
 ; ==============================================================================
+; CLIPBOARD HELPERS
+; ==============================================================================
+
+; Paste text using clipboard (with backup/restore)
+; text: Text to paste
+; Returns: true on success, false on failure
+PasteText(text)
+{
+    ; Backup current clipboard
+    ClipboardBackup := ClipboardAll
+    
+    ; Set clipboard to desired text
+    Clipboard := text
+    
+    ; Wait for clipboard to be ready (1 second timeout)
+    ClipWait, 1
+    if (ErrorLevel)
+    {
+        Checkpoint("Clipboard failed to update", false)
+        Clipboard := ClipboardBackup
+        ClipboardBackup := ""
+        return false
+    }
+    
+    ; Paste with Ctrl+V
+    Send, ^v
+    Sleep, 100
+    
+    ; Restore original clipboard
+    Clipboard := ClipboardBackup
+    ClipboardBackup := ""
+    
+    return true
+}
+
+; ==============================================================================
 ; PATIENT NAME PARSING
 ; ==============================================================================
 
@@ -325,14 +361,12 @@ NavigateToFillSheet(specialistName)
     ; Step 6: Paste specialist name (window already has focus on search)
     Checkpoint("Step 6: Searching for specialist: " . specialistName, false)
     
-    ; Use clipboard for instant paste
-    ClipboardBackup := ClipboardAll
-    Clipboard := specialistName
-    ClipWait, 1
-    Send, ^v
-    Sleep, 300
-    Clipboard := ClipboardBackup
-    ClipboardBackup := ""
+    ; Use clipboard for instant paste (with backup/restore)
+    if !PasteText(specialistName)
+    {
+        Failure("Failed to paste specialist name", true, true, false)
+        return false
+    }
     
     Sleep, 200  ; Wait for search results
     

@@ -475,6 +475,10 @@ LaunchForm(formPath, presetName := "")
         args := """" . presetName . """"
     }
     
+    ; Debug: Show what we're about to launch
+    debugMsg := "Launching form:`n`nPath: " . formPath . "`n`nPatient: " . LauncherPatientName . "`nOD Title: " . LauncherODTitle . "`nPreset: " . presetName . "`n`nFull command:`n" . """" . formPath . """ " . args
+    MsgBox, 64, Debug - LaunchForm, %debugMsg%, 5
+    
     if (args != "")
         Run, "%formPath%" %args%
     else

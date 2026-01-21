@@ -1,0 +1,85 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Build All (Compile to EXE)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/Build.ps1",
+            "windows": {
+                "runtimeExecutable": "powershell.exe",
+                "runtimeArgs": [
+                    "-ExecutionPolicy", "Bypass",
+                    "-File", "${workspaceFolder}/Build.ps1"
+                ]
+            },
+            "console": "integratedTerminal",
+            "preLaunchTask": null
+        },
+        {
+            "name": "Run Launcher (Dev - AHK)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/Launcher.ahk",
+            "windows": {
+                "runtimeExecutable": "C:/Program Files/AutoHotkey/AutoHotkeyU64.exe",
+                "runtimeArgs": [
+                    "${workspaceFolder}/Launcher.ahk"
+                ]
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Run LauncherDynamic (Dev - AHK)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/LauncherDynamic.ahk",
+            "windows": {
+                "runtimeExecutable": "C:/Program Files/AutoHotkey/AutoHotkeyU64.exe",
+                "runtimeArgs": [
+                    "${workspaceFolder}/LauncherDynamic.ahk"
+                ]
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Run Launcher (Compiled EXE)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/Build/Launcher.exe",
+            "windows": {
+                "runtimeExecutable": "cmd.exe",
+                "runtimeArgs": [
+                    "/c", "${workspaceFolder}/Build/Launcher.exe"
+                ]
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Run LauncherDynamic (Compiled EXE)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/Build/LauncherDynamic.exe",
+            "windows": {
+                "runtimeExecutable": "cmd.exe",
+                "runtimeArgs": [
+                    "/c", "${workspaceFolder}/Build/LauncherDynamic.exe"
+                ]
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Run CoordHelper",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/Tools/CoordHelper.ahk",
+            "windows": {
+                "runtimeExecutable": "C:/Program Files/AutoHotkey/AutoHotkeyU64.exe",
+                "runtimeArgs": [
+                    "${workspaceFolder}/Tools/CoordHelper.ahk"
+                ]
+            },
+            "console": "integratedTerminal"
+        }
+    ]
+}

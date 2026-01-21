@@ -458,17 +458,27 @@ LaunchForm(formPath, presetName := "")
         return
     }
     
-    ; Set environment variables for patient context (multi-user safe, no file conflicts)
-    EnvSet, REFERRAL_PATIENT_NAME, %LauncherPatientName%
-    EnvSet, REFERRAL_OD_TITLE, %LauncherODTitle%
-    EnvSet, REFERRAL_PRESET_NAME, %presetName%
+    ; Build command line args
+    ; Format: "patientName" "odWindowTitle" "presetName"
+    args := ""
     
-    ; Debug: Show what we're about to launch
-    debugMsg := "Launching form:`n`nPath: " . formPath . "`n`nPatient: " . LauncherPatientName . "`nOD Title: " . LauncherODTitle . "`nPreset: " . presetName . "`n`nUsing environment variables (multi-user safe)"
-    MsgBox, 64, Debug - LaunchForm, %debugMsg%, 5
+    if (LauncherPatientName != "")
+    {
+        ; Full mode with patient context
+        args := """" . LauncherPatientName . """ """ . LauncherODTitle . """"
+        if (presetName != "")
+            args .= " """ . presetName . """"
+    }
+    else if (presetName != "")
+    {
+        ; Standalone mode with just preset
+        args := """" . presetName . """"
+    }
     
-    ; Launch the form (it will inherit environment variables)
-    Run, "%formPath%"
+    if (args != "")
+        Run, "%formPath%" %args%
+    else
+        Run, "%formPath%"
     
     Sleep, 500
     ExitApp

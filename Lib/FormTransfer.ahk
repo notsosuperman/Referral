@@ -517,43 +517,18 @@ InitPresets()
     DebugLog("InitPresets: FORM_NAME = " . PS_FormName)
     DebugLog("InitPresets: A_Args count = " . A_Args.Length())
     
-    ; Try to read context from environment variables first (multi-user safe for UNC paths)
-    EnvGet, envPatientName, REFERRAL_PATIENT_NAME
-    EnvGet, envODTitle, REFERRAL_OD_TITLE
-    EnvGet, envPresetName, REFERRAL_PRESET_NAME
-    
-    DebugLog("InitPresets: Env Patient: " . envPatientName)
-    DebugLog("InitPresets: Env OD Title: " . envODTitle)
-    DebugLog("InitPresets: Env Preset: " . envPresetName)
-    
     ; Determine argument structure
-    ; Priority: Environment variables > command-line args
-    if (envODTitle != "" && InStr(envODTitle, "Open Dental"))
+    ; If A_Args[2] contains "Open Dental", we have patient context
+    if (A_Args.Length() >= 2 && InStr(A_Args[2], "Open Dental"))
     {
-        ; Context from environment variables (UNC-safe, multi-user safe)
-        FT_PatientName := envPatientName
-        FT_ODWindowTitle := envODTitle
-        FT_HasPatientContext := true
-        
-        presetName := (envPresetName != "") ? envPresetName : "Default"
-        
-        DebugLog("InitPresets: Using env vars - Patient: " . FT_PatientName)
-        DebugLog("InitPresets: OD Title: " . FT_ODWindowTitle)
-        DebugLog("InitPresets: Preset: " . presetName)
-        
-        ; Update form's patient display
-        SetPatientName(FT_PatientName)
-    }
-    else if (A_Args.Length() >= 2 && InStr(A_Args[2], "Open Dental"))
-    {
-        ; Full mode with patient context from command-line
+        ; Full mode with patient context
         FT_PatientName := A_Args[1]
         FT_ODWindowTitle := A_Args[2]
         FT_HasPatientContext := true
         
         presetName := (A_Args.Length() >= 3 && A_Args[3] != "") ? A_Args[3] : "Default"
         
-        DebugLog("InitPresets: Full mode from args - Patient: " . FT_PatientName)
+        DebugLog("InitPresets: Full mode - Patient: " . FT_PatientName)
         DebugLog("InitPresets: OD Title: " . FT_ODWindowTitle)
         DebugLog("InitPresets: Preset: " . presetName)
         
@@ -590,10 +565,31 @@ InitPresets()
 ; ==============================================================================
 PS_GetFormName()
 {
-    ; Read the main script file
-    FileRead, scriptContent, %A_ScriptFullPath%
+    ; Determine which file to read
+    if (A_IsCompiled)
+    {
+        ; When compiled, read from corresponding .ahk file in same directory
+        ; Build script copies .ahk files alongside .exe files for this purpose
+        SplitPath, A_ScriptFullPath, , scriptDir, , scriptNameNoExt
+        scriptPath := scriptDir . "\" . scriptNameNoExt . ".ahk"
+        
+        ; Fallback: try parent directory if .ahk not in same dir
+        if (!FileExist(scriptPath))
+            scriptPath := scriptDir . "\..\Forms\" . scriptNameNoExt . ".ahk"
+    }
+    else
+    {
+        ; Dev mode - read from the script itself
+        scriptPath := A_ScriptFullPath
+    }
+    
+    ; Read the script file
+    FileRead, scriptContent, %scriptPath%
     if (ErrorLevel)
+    {
+        DebugLog("PS_GetFormName: Failed to read " . scriptPath)
         return ""
+    }
     
     ; Look for ; FORM_NAME: xxx in the first 20 lines
     lineCount := 0

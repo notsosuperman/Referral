@@ -517,18 +517,55 @@ InitPresets()
     DebugLog("InitPresets: FORM_NAME = " . PS_FormName)
     DebugLog("InitPresets: A_Args count = " . A_Args.Length())
     
-    ; Determine argument structure
-    ; If A_Args[2] contains "Open Dental", we have patient context
-    if (A_Args.Length() >= 2 && InStr(A_Args[2], "Open Dental"))
+    ; Try to read context from LauncherContext.ini first (for UNC path compatibility)
+    contextFile := A_ScriptDir . "\..\Config\LauncherContext.ini"
+    contextPatientName := ""
+    contextODTitle := ""
+    contextPresetName := ""
+    
+    if (FileExist(contextFile))
     {
-        ; Full mode with patient context
+        IniRead, contextPatientName, %contextFile%, Context, PatientName, ERROR
+        IniRead, contextODTitle, %contextFile%, Context, ODTitle, ERROR
+        IniRead, contextPresetName, %contextFile%, Context, PresetName, ERROR
+        
+        ; Delete the context file after reading (one-time use)
+        FileDelete, %contextFile%
+        
+        DebugLog("InitPresets: Read from LauncherContext.ini")
+        DebugLog("InitPresets: Context Patient: " . contextPatientName)
+        DebugLog("InitPresets: Context OD Title: " . contextODTitle)
+        DebugLog("InitPresets: Context Preset: " . contextPresetName)
+    }
+    
+    ; Determine argument structure
+    ; Priority: LauncherContext.ini > command-line args
+    if (contextODTitle != "ERROR" && contextODTitle != "" && InStr(contextODTitle, "Open Dental"))
+    {
+        ; Context from file (UNC-safe method)
+        FT_PatientName := contextPatientName
+        FT_ODWindowTitle := contextODTitle
+        FT_HasPatientContext := true
+        
+        presetName := (contextPresetName != "ERROR" && contextPresetName != "") ? contextPresetName : "Default"
+        
+        DebugLog("InitPresets: Using context from file - Patient: " . FT_PatientName)
+        DebugLog("InitPresets: OD Title: " . FT_ODWindowTitle)
+        DebugLog("InitPresets: Preset: " . presetName)
+        
+        ; Update form's patient display
+        SetPatientName(FT_PatientName)
+    }
+    else if (A_Args.Length() >= 2 && InStr(A_Args[2], "Open Dental"))
+    {
+        ; Full mode with patient context from command-line
         FT_PatientName := A_Args[1]
         FT_ODWindowTitle := A_Args[2]
         FT_HasPatientContext := true
         
         presetName := (A_Args.Length() >= 3 && A_Args[3] != "") ? A_Args[3] : "Default"
         
-        DebugLog("InitPresets: Full mode - Patient: " . FT_PatientName)
+        DebugLog("InitPresets: Full mode from args - Patient: " . FT_PatientName)
         DebugLog("InitPresets: OD Title: " . FT_ODWindowTitle)
         DebugLog("InitPresets: Preset: " . presetName)
         

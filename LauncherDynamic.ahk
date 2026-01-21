@@ -458,35 +458,18 @@ LaunchForm(formPath, presetName := "")
         return
     }
     
-    ; Build command line args
-    ; Format: "patientName" "odWindowTitle" "presetName"
-    args := ""
-    
-    if (LauncherPatientName != "")
-    {
-        ; Full mode with patient context
-        args := """" . LauncherPatientName . """ """ . LauncherODTitle . """"
-        if (presetName != "")
-            args .= " """ . presetName . """"
-    }
-    else if (presetName != "")
-    {
-        ; Standalone mode with just preset
-        args := """" . presetName . """"
-    }
+    ; Write patient context to file (more reliable than command-line args for UNC paths)
+    contextFile := A_ScriptDir . "\Config\LauncherContext.ini"
+    IniWrite, %LauncherPatientName%, %contextFile%, Context, PatientName
+    IniWrite, %LauncherODTitle%, %contextFile%, Context, ODTitle
+    IniWrite, %presetName%, %contextFile%, Context, PresetName
     
     ; Debug: Show what we're about to launch
-    debugMsg := "Launching form:`n`nPath: " . formPath . "`n`nPatient: " . LauncherPatientName . "`nOD Title: " . LauncherODTitle . "`nPreset: " . presetName . "`n`nFull command:`n" . """" . formPath . """ " . args
+    debugMsg := "Launching form:`n`nPath: " . formPath . "`n`nPatient: " . LauncherPatientName . "`nOD Title: " . LauncherODTitle . "`nPreset: " . presetName . "`n`nContext written to:`n" . contextFile
     MsgBox, 64, Debug - LaunchForm, %debugMsg%, 5
     
-    ; Use cmd.exe /c for UNC path compatibility (ensures args are passed correctly)
-    if (args != "")
-    {
-        fullCommand := """" . formPath . """ " . args
-        Run, %ComSpec% /c "%fullCommand%",, Hide
-    }
-    else
-        Run, "%formPath%"
+    ; Launch the form (it will read LauncherContext.ini on startup)
+    Run, "%formPath%"
     
     Sleep, 500
     ExitApp

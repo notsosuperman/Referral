@@ -458,17 +458,16 @@ LaunchForm(formPath, presetName := "")
         return
     }
     
-    ; Write patient context to file (more reliable than command-line args for UNC paths)
-    contextFile := A_ScriptDir . "\Config\LauncherContext.ini"
-    IniWrite, %LauncherPatientName%, %contextFile%, Context, PatientName
-    IniWrite, %LauncherODTitle%, %contextFile%, Context, ODTitle
-    IniWrite, %presetName%, %contextFile%, Context, PresetName
+    ; Set environment variables for patient context (multi-user safe, no file conflicts)
+    EnvSet, REFERRAL_PATIENT_NAME, %LauncherPatientName%
+    EnvSet, REFERRAL_OD_TITLE, %LauncherODTitle%
+    EnvSet, REFERRAL_PRESET_NAME, %presetName%
     
     ; Debug: Show what we're about to launch
-    debugMsg := "Launching form:`n`nPath: " . formPath . "`n`nPatient: " . LauncherPatientName . "`nOD Title: " . LauncherODTitle . "`nPreset: " . presetName . "`n`nContext written to:`n" . contextFile
+    debugMsg := "Launching form:`n`nPath: " . formPath . "`n`nPatient: " . LauncherPatientName . "`nOD Title: " . LauncherODTitle . "`nPreset: " . presetName . "`n`nUsing environment variables (multi-user safe)"
     MsgBox, 64, Debug - LaunchForm, %debugMsg%, 5
     
-    ; Launch the form (it will read LauncherContext.ini on startup)
+    ; Launch the form (it will inherit environment variables)
     Run, "%formPath%"
     
     Sleep, 500

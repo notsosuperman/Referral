@@ -517,39 +517,27 @@ InitPresets()
     DebugLog("InitPresets: FORM_NAME = " . PS_FormName)
     DebugLog("InitPresets: A_Args count = " . A_Args.Length())
     
-    ; Try to read context from LauncherContext.ini first (for UNC path compatibility)
-    contextFile := A_ScriptDir . "\..\Config\LauncherContext.ini"
-    contextPatientName := ""
-    contextODTitle := ""
-    contextPresetName := ""
+    ; Try to read context from environment variables first (multi-user safe for UNC paths)
+    EnvGet, envPatientName, REFERRAL_PATIENT_NAME
+    EnvGet, envODTitle, REFERRAL_OD_TITLE
+    EnvGet, envPresetName, REFERRAL_PRESET_NAME
     
-    if (FileExist(contextFile))
-    {
-        IniRead, contextPatientName, %contextFile%, Context, PatientName, ERROR
-        IniRead, contextODTitle, %contextFile%, Context, ODTitle, ERROR
-        IniRead, contextPresetName, %contextFile%, Context, PresetName, ERROR
-        
-        ; Delete the context file after reading (one-time use)
-        FileDelete, %contextFile%
-        
-        DebugLog("InitPresets: Read from LauncherContext.ini")
-        DebugLog("InitPresets: Context Patient: " . contextPatientName)
-        DebugLog("InitPresets: Context OD Title: " . contextODTitle)
-        DebugLog("InitPresets: Context Preset: " . contextPresetName)
-    }
+    DebugLog("InitPresets: Env Patient: " . envPatientName)
+    DebugLog("InitPresets: Env OD Title: " . envODTitle)
+    DebugLog("InitPresets: Env Preset: " . envPresetName)
     
     ; Determine argument structure
-    ; Priority: LauncherContext.ini > command-line args
-    if (contextODTitle != "ERROR" && contextODTitle != "" && InStr(contextODTitle, "Open Dental"))
+    ; Priority: Environment variables > command-line args
+    if (envODTitle != "" && InStr(envODTitle, "Open Dental"))
     {
-        ; Context from file (UNC-safe method)
-        FT_PatientName := contextPatientName
-        FT_ODWindowTitle := contextODTitle
+        ; Context from environment variables (UNC-safe, multi-user safe)
+        FT_PatientName := envPatientName
+        FT_ODWindowTitle := envODTitle
         FT_HasPatientContext := true
         
-        presetName := (contextPresetName != "ERROR" && contextPresetName != "") ? contextPresetName : "Default"
+        presetName := (envPresetName != "") ? envPresetName : "Default"
         
-        DebugLog("InitPresets: Using context from file - Patient: " . FT_PatientName)
+        DebugLog("InitPresets: Using env vars - Patient: " . FT_PatientName)
         DebugLog("InitPresets: OD Title: " . FT_ODWindowTitle)
         DebugLog("InitPresets: Preset: " . presetName)
         

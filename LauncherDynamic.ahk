@@ -479,8 +479,12 @@ LaunchForm(formPath, presetName := "")
     debugMsg := "Launching form:`n`nPath: " . formPath . "`n`nPatient: " . LauncherPatientName . "`nOD Title: " . LauncherODTitle . "`nPreset: " . presetName . "`n`nFull command:`n" . """" . formPath . """ " . args
     MsgBox, 64, Debug - LaunchForm, %debugMsg%, 5
     
+    ; Use cmd.exe /c for UNC path compatibility (ensures args are passed correctly)
     if (args != "")
-        Run, "%formPath%" %args%
+    {
+        fullCommand := """" . formPath . """ " . args
+        Run, %ComSpec% /c "%fullCommand%",, Hide
+    }
     else
         Run, "%formPath%"
     

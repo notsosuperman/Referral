@@ -259,30 +259,51 @@ ClickAt(coordObj, doubleClick := false)
 ; Returns: true on success, false on failure
 PasteText(text)
 {
+    Checkpoint("PasteText: Starting - text length = " . StrLen(text), false)
+    
     ; Backup current clipboard
     ClipboardBackup := ClipboardAll
+    
+    ; Clear clipboard first to ensure ClipWait works properly
+    Clipboard := ""
+    Sleep, 50
     
     ; Set clipboard to desired text
     Clipboard := text
     
-    ; Wait for clipboard to be ready (1 second timeout)
-    ClipWait, 1
+    ; Wait for clipboard to be ready (2 second timeout)
+    ClipWait, 2
     if (ErrorLevel)
     {
-        Checkpoint("Clipboard failed to update", false)
+        Checkpoint("PasteText: FAILED - ClipWait timed out", false)
         Clipboard := ClipboardBackup
         ClipboardBackup := ""
         return false
     }
     
+    ; Verify clipboard contains expected text
+    if (Clipboard != text)
+    {
+        Checkpoint("PasteText: WARNING - Clipboard mismatch, retrying", false)
+        Clipboard := text
+        ClipWait, 1
+    }
+    
+    Checkpoint("PasteText: Clipboard ready, pasting", false)
+    
     ; Paste with Ctrl+V
     Send, ^v
-    Sleep, 100
+    
+    ; CRITICAL: Wait for application to finish reading clipboard
+    ; This delay prevents race condition where we restore clipboard
+    ; before the target app has finished processing the paste
+    Sleep, 300
     
     ; Restore original clipboard
     Clipboard := ClipboardBackup
     ClipboardBackup := ""
     
+    Checkpoint("PasteText: Complete - clipboard restored", false)
     return true
 }
 

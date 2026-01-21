@@ -89,6 +89,11 @@ Write-Step "Copying configuration files..."
 Copy-Item -Recurse "Config" "$BUILD_DIR\Config"
 Write-Success "Config folder copied"
 
+# Copy source .ahk files (needed for dynamic launcher to read headers)
+Write-Step "Copying source form files for metadata..."
+Copy-Item "Forms\*.ahk" "$BUILD_DIR\Forms\"
+Write-Success "Form .ahk files copied (for header metadata)"
+
 # Create Logs directory
 Write-Step "Creating Logs directory..."
 New-Item -Path "$BUILD_DIR\Logs" -ItemType Directory -Force | Out-Null

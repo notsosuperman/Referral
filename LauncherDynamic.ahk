@@ -123,13 +123,46 @@ DiscoverForms()
 {
     forms := []
     
-    Loop, Files, %A_ScriptDir%\Forms\*.ahk
+    ; Check if running as compiled (look for .exe) or dev mode (look for .ahk)
+    if (A_IsCompiled)
     {
-        formData := ParseFormHeader(A_LoopFileFullPath)
-        if (formData.name != "")
+        ; Compiled mode - scan .exe files, read metadata from .ahk
+        Loop, Files, %A_ScriptDir%\Forms\*.exe
         {
-            formData.path := A_LoopFileFullPath
-            forms.Push(formData)
+            ; Extract base name (e.g., "Farham" from "Farham.exe")
+            SplitPath, A_LoopFileName, , , , baseName
+            
+            ; Look for corresponding .ahk file in same directory (copied by build script)
+            ahkFile := A_ScriptDir . "\Forms\" . baseName . ".ahk"
+            if (FileExist(ahkFile))
+            {
+                formData := ParseFormHeader(ahkFile)
+            }
+            else
+            {
+                ; Fallback: use filename as both name and display
+                formData := {name: baseName, display: baseName}
+            }
+            
+            if (formData.name != "")
+            {
+                ; Use .exe path for launching
+                formData.path := A_LoopFileFullPath
+                forms.Push(formData)
+            }
+        }
+    }
+    else
+    {
+        ; Dev mode - scan .ahk files
+        Loop, Files, %A_ScriptDir%\Forms\*.ahk
+        {
+            formData := ParseFormHeader(A_LoopFileFullPath)
+            if (formData.name != "")
+            {
+                formData.path := A_LoopFileFullPath
+                forms.Push(formData)
+            }
         }
     }
     
@@ -416,12 +449,8 @@ LaunchForm(formPath, presetName := "")
     global LauncherPatientName
     global LauncherODTitle
     
-    ; Detect if we're compiled and adjust form extension
-    if (A_IsCompiled)
-    {
-        ; Running as .exe - launch form .exes
-        formPath := StrReplace(formPath, ".ahk", ".exe")
-    }
+    ; Path is already correct from DiscoverForms()
+    ; (.exe in compiled mode, .ahk in dev mode)
     
     if !FileExist(formPath)
     {

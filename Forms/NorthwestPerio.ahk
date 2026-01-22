@@ -1,10 +1,8 @@
 ; ==============================================================================
 ; Northwest Periodontics Referral Slip - AHK v1
 ; Based on Open Dental Sheet XML Export
-; WINDOW_TITLE: Northwest Periodontics Referral Slip
 ; SPECIALIST_NAME: Perio - Northwest Periodontics
 ; FORM_NAME: NorthwestPerio
-; DISPLAY_NAME: Perio - Northwest Periodontics
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force
@@ -51,43 +49,25 @@ return
 
 BuildReferralForm()
 {
+    ; Get specialist name for window title
+    specialistName := PS_GetSpecialistName()
+    windowTitle := "Referral - " . specialistName
+    
     ; Set GUI defaults
-    Gui, Main:New, +Resize +MinSize400x400, Northwest Periodontics Referral Slip
+    Gui, Main:New, +Resize +MinSize400x400, %windowTitle%
     Gui, Main:Color, FFFFFF
     Gui, Main:Font, s11, Arial
     
-    yPos := 10
+    ; Build standard header (modifies yPos by reference)
+    yPos := 20
+    formWidth := 500
+    FT_BuildHeader(yPos, formWidth)
+    
     colRight := 260  ; Right column X position
-    
-    ; ===========================================================================
-    ; Line 1: Office Name (display only)
-    ; ===========================================================================
-    Gui, Main:Font, s14 Bold, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w500 cNavy vTxtOfficeName, %OfficeName%
-    
-    ; ===========================================================================
-    ; Line 2: Patient Name (display only)
-    ; ===========================================================================
-    yPos += 28
-    Gui, Main:Font, s12 Normal, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w500 vTxtPatientName, Patient: %PatientName%
-    
-    ; ===========================================================================
-    ; Line 3: Referring Dentist (in header)
-    ; ===========================================================================
-    yPos += 28
-    Gui, Main:Font, s10 Normal, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w100 h22 +0x200, Referring Dentist:
-    Gui, Main:Add, DropDownList, x125 y%yPos% w180 vReferralSource, Dr. Gabe Proulx|Dr. Curtis Wahlen|Dr. Ben Wolfe|Dr. Jae Lee
-    
-    ; Separator
-    yPos += 30
-    Gui, Main:Add, Text, x20 y%yPos% w500 h2 +0x10
     
     ; ===========================================================================
     ; Treatment Types
     ; ===========================================================================
-    yPos += 10
     Gui, Main:Font, s10 Bold Italic Underline, Arial
     Gui, Main:Add, Text, x20 y%yPos% w200, Treatment Requested
     
@@ -144,56 +124,14 @@ BuildReferralForm()
     Gui, Main:Add, Button, x20 y%yPos% w100 h35 gBtnClearForm, Clear Form
     Gui, Main:Add, Button, x400 y%yPos% w120 h35 gBtnSubmit Default, Submit Referral
     
+    ; Calculate window height
+    winHeight := yPos + 50
+    
     ; Show the GUI
-    Gui, Main:Show, w540 h480
+    Gui, Main:Show, w540 h%winHeight%
 }
 
 ; ==============================================================================
-; Event Handlers
+; Include Standard Handlers
 ; ==============================================================================
-
-BtnClearForm:
-    ClearForm()
-return
-
-BtnSubmit:
-    Gui, Main:Submit, NoHide
-    
-    ; Get form data
-    formData := GetFormData()
-    
-    ; Hide form during transfer
-    Gui, Main:Hide
-    
-    ; Transfer to Open Dental
-    FormTransfer("NorthwestPerio", formData)
-    
-    ; Close form (no message)
-    ExitApp
-return
-
-; ==============================================================================
-; GUI Close Handler
-; ==============================================================================
-MainGuiClose:
-MainGuiEscape:
-    ExitApp
-return
-
-; ==============================================================================
-; Utility Functions
-; ==============================================================================
-
-; Set the patient name display (call this before showing the form)
-SetPatientName(name)
-{
-    global PatientName := name
-    GuiControl, Main:, TxtPatientName, Patient: %name%
-}
-
-; Set the office name display (call this before showing the form)
-SetOfficeName(name)
-{
-    global OfficeName := name
-    GuiControl, Main:, TxtOfficeName, %name%
-}
+#Include %A_ScriptDir%\..\Lib\FormHandlers.ahk

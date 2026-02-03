@@ -81,6 +81,11 @@ ParseFormScript(scriptPath)
     ; Skip these display-only controls
     skipControls := "TxtOfficeName,TxtPatientName"
     
+    ; Always add ReferralSource since it's part of the standard header (FT_BuildHeader)
+    ; It won't be in the form script, but every form uses it
+    referralOptions := "Dr. Gabe Proulx|Dr. Curtis Wahlen|Dr. Ben Wolfe|Dr. Jae Lee"
+    Controls.Push({var: "ReferralSource", type: "dropdown", options: referralOptions, x: 0, y: 0})
+    
     ; Parse each line for GUI controls
     Loop, Parse, content, `n, `r
     {

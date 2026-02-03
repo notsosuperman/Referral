@@ -74,7 +74,10 @@ if WinExist(TargetWindow)
 else
 {
     ; Fill Sheet not found - try to navigate there automatically
-    ToolTip, Navigating to Fill Sheet for %SpecialistName%...`nPlease wait..., 100, 100
+    ; Center tooltip horizontally on screen
+    SysGet, screenWidth, 0
+    tooltipX := (screenWidth // 2) - 150
+    ToolTip, Navigating to Fill Sheet for %SpecialistName%...`nPlease wait..., %tooltipX%, 100
     
     ; Try to activate Open Dental
     if WinExist("Open Dental {")
@@ -94,14 +97,16 @@ else
         {
             ; Navigation failed - fall back to manual mode
             WaitingForF1 := true
-            ToolTip, Navigation failed!`n`nManually open Fill Sheet for:`n%SpecialistName%`n`nThen press F1`n`nPress Escape to abort, 100, 100
+            ToolTip, Navigation failed!`n`nManually open Fill Sheet for:`n%SpecialistName%`n`nThen press F1`n`nPress Escape to abort, %tooltipX%, 100
         }
     }
     else
     {
         ; Open Dental not running - manual mode
+        SysGet, screenWidth, 0
+        tooltipX := (screenWidth // 2) - 150
         WaitingForF1 := true
-        ToolTip, Open Dental not found!`n`nOpen Fill Sheet for:`n%SpecialistName%`n`nThen press F1`n`nPress Escape to abort, 100, 100
+        ToolTip, Open Dental not found!`n`nOpen Fill Sheet for:`n%SpecialistName%`n`nThen press F1`n`nPress Escape to abort, %tooltipX%, 100
     }
 }
 return

@@ -449,19 +449,19 @@ LaunchCoordHelperForForm(formName)
     WinActivate, Fill Sheet
     Sleep, 300
     
-    ; Launch CoordHelper and wait for it to complete
-    coordHelperPath := A_ScriptDir . "\Tools\CoordHelper.ahk"
+    ; Launch CoordHelper - use .exe if compiled, .ahk if dev mode
     formScript := formName . ".ahk"
     
     if (A_IsCompiled)
     {
-        ; In compiled mode, we need AutoHotkey to run the .ahk file
-        ; Check if AutoHotkey is available
-        RunWait, AutoHotkeyU64.exe "%coordHelperPath%" %formScript%, %A_ScriptDir%
+        ; Compiled mode - run CoordHelper.exe
+        coordHelperPath := A_ScriptDir . "\Tools\CoordHelper.exe"
+        RunWait, "%coordHelperPath%" %formScript%, %A_ScriptDir%
     }
     else
     {
-        ; In dev mode, run directly
+        ; Dev mode - run CoordHelper.ahk
+        coordHelperPath := A_ScriptDir . "\Tools\CoordHelper.ahk"
         RunWait, "%A_AhkPath%" "%coordHelperPath%" %formScript%, %A_ScriptDir%
     }
     
@@ -560,13 +560,20 @@ MapAllUnmapped()
         WinActivate, Fill Sheet
         Sleep, 300
         
-        coordHelperPath := A_ScriptDir . "\Tools\CoordHelper.ahk"
         formScript := formName . ".ahk"
         
         if (A_IsCompiled)
-            RunWait, AutoHotkeyU64.exe "%coordHelperPath%" %formScript%, %A_ScriptDir%
+        {
+            ; Compiled mode - run CoordHelper.exe
+            coordHelperPath := A_ScriptDir . "\Tools\CoordHelper.exe"
+            RunWait, "%coordHelperPath%" %formScript%, %A_ScriptDir%
+        }
         else
+        {
+            ; Dev mode - run CoordHelper.ahk
+            coordHelperPath := A_ScriptDir . "\Tools\CoordHelper.ahk"
             RunWait, "%A_AhkPath%" "%coordHelperPath%" %formScript%, %A_ScriptDir%
+        }
     }
     
     ; Refresh the GUI to show updated statuses

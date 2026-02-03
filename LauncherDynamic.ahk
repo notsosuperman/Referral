@@ -442,8 +442,8 @@ LaunchCoordHelperForForm(formName)
 {
     specialistName := GetSpecialistNameForForm(formName)
     
-    ; Show instruction dialog
-    MsgBox, 64, Map Form, Open "Fill Sheet" in Open Dental for:`n`n%specialistName%`n`nClick OK when ready to start mapping.
+    ; Show instruction dialog (4096 = always on top, 64 = info icon)
+    MsgBox, 4160, Map Form, Open "Fill Sheet" in Open Dental for:`n`n%specialistName%`n`nClick OK when ready to start mapping.
     
     ; Activate Fill Sheet window
     WinActivate, Fill Sheet
@@ -544,7 +544,8 @@ MapAllUnmapped()
         formName := form.name
         
         ; Show dialog with options
-        MsgBox, 35, Map All Unmapped (%currentNum%/%totalCount%), Ready to map: %formDisplay%`n`nOpen "Fill Sheet" in Open Dental for this specialist.`n`nYes = Start mapping`nNo = Skip this form`nCancel = Stop mapping
+        ; 4131 = 4096 (always on top) + 35 (Yes/No/Cancel + question icon)
+        MsgBox, 4131, Map All Unmapped (%currentNum%/%totalCount%), Ready to map: %formDisplay%`n`nOpen "Fill Sheet" in Open Dental for this specialist.`n`nYes = Start mapping`nNo = Skip this form`nCancel = Stop mapping
         
         IfMsgBox, Cancel
         {
@@ -719,9 +720,10 @@ BuildDevModeGUI(forms)
         status := MappingStatuses[form.name]
         formName := form.name
         
-        ; Form name and status on same line
+        ; Form name with number and status on same line
         Gui, Launcher:Font, s10 Bold, Arial
-        Gui, Launcher:Add, Text, x20 y%yPos% w300, % form.display
+        formDisplayText := index . ". " . form.display
+        Gui, Launcher:Add, Text, x20 y%yPos% w300, %formDisplayText%
         
         ; Status indicator
         if (status.exists)
@@ -737,17 +739,17 @@ BuildDevModeGUI(forms)
         }
         yPos += 25
         
-        ; Map button with unique text (index prefix)
+        ; Map button with index prefix
         Gui, Launcher:Font, s8 Normal, Arial
         mapBtnText := index . ":Map"
-        Gui, Launcher:Add, Button, x40 y%yPos% w60 h22 gDevBtnHandler, %mapBtnText%
+        Gui, Launcher:Add, Button, x40 y%yPos% w55 h22 gDevBtnHandler, %mapBtnText%
         DevBtnActions[mapBtnText] := {action: "map", formName: formName, presetName: ""}
         
         ; Delete Mapping button (only if mapped)
         if (status.exists)
         {
-            delMapBtnText := index . ":DelMap"
-            Gui, Launcher:Add, Button, x105 y%yPos% w100 h22 gDevBtnHandler, %delMapBtnText%
+            delMapBtnText := index . ":Del"
+            Gui, Launcher:Add, Button, x100 y%yPos% w45 h22 gDevBtnHandler, %delMapBtnText%
             DevBtnActions[delMapBtnText] := {action: "delmap", formName: formName, presetName: ""}
         }
         yPos += 28
@@ -768,8 +770,8 @@ BuildDevModeGUI(forms)
                 xPos += textWidth
                 
                 ; Delete button with unique text
-                delPresetBtnText := index . ":" . pIndex . ":x"
-                Gui, Launcher:Add, Button, x%xPos% y%yPos% w20 h18 gDevBtnHandler, %delPresetBtnText%
+                delPresetBtnText := index . "." . pIndex
+                Gui, Launcher:Add, Button, x%xPos% y%yPos% w22 h18 gDevBtnHandler, %delPresetBtnText%
                 DevBtnActions[delPresetBtnText] := {action: "delpreset", formName: formName, presetName: presetName}
                 xPos += 30
                 

@@ -440,16 +440,8 @@ GetSpecialistNameForForm(formName)
 ; Launch CoordHelper for a specific form
 LaunchCoordHelperForForm(formName)
 {
-    specialistName := GetSpecialistNameForForm(formName)
-    
-    ; Show instruction dialog (4096 = always on top, 64 = info icon)
-    MsgBox, 4160, Map Form, Open "Fill Sheet" in Open Dental for:`n`n%specialistName%`n`nClick OK when ready to start mapping.
-    
-    ; Activate Fill Sheet window
-    WinActivate, Fill Sheet
-    Sleep, 300
-    
     ; Launch CoordHelper - use .exe if compiled, .ahk if dev mode
+    ; CoordHelper will handle activating Fill Sheet and prompting user
     formScript := formName . ".ahk"
     
     if (A_IsCompiled)
@@ -545,7 +537,7 @@ MapAllUnmapped()
         
         ; Show dialog with options
         ; 4131 = 4096 (always on top) + 35 (Yes/No/Cancel + question icon)
-        MsgBox, 4131, Map All Unmapped (%currentNum%/%totalCount%), Ready to map: %formDisplay%`n`nOpen "Fill Sheet" in Open Dental for this specialist.`n`nYes = Start mapping`nNo = Skip this form`nCancel = Stop mapping
+        MsgBox, 4131, Map All Unmapped (%currentNum%/%totalCount%), Ready to map: %formDisplay%`n`nYes = Start mapping`nNo = Skip this form`nCancel = Stop mapping
         
         IfMsgBox, Cancel
         {
@@ -556,10 +548,7 @@ MapAllUnmapped()
         IfMsgBox, No
             continue
         
-        ; User clicked Yes - activate Fill Sheet and launch CoordHelper
-        WinActivate, Fill Sheet
-        Sleep, 300
-        
+        ; User clicked Yes - launch CoordHelper (it handles Fill Sheet activation)
         formScript := formName . ".ahk"
         
         if (A_IsCompiled)

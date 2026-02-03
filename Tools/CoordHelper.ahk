@@ -17,59 +17,170 @@ global CurrentIndex := 0
 global SpecialistName := ""
 global FormName := ""
 global IsCapturing := false
+global ClickHotkeyRegistered := false
+global WaitingForF1 := false
+global WinX, WinY, WinW, WinH  ; Fill Sheet window position
 
 ; Set coordinate modes globally
 CoordMode, Mouse, Client
 CoordMode, ToolTip, Screen
 
 ; ==============================================================================
-; Main
+; Auto-Execute Section
 ; ==============================================================================
-Main()
+
+; Get target form from command line argument
+targetScript := A_Args[1]
+if (targetScript = "")
+{
+    MsgBox, 48, CoordHelper, Usage: CoordHelper.ahk FormName.ahk`n`nExample: CoordHelper.ahk HillsboroOMFS.ahk
+    ExitApp
+}
+
+; Prepend Forms directory if needed
+if !InStr(targetScript, "\")
+    targetScript := "..\Forms\" . targetScript
+
+; Extract form name (without .ahk extension)
+SplitPath, targetScript, fileName
+FormName := RegExReplace(fileName, "\.ahk$", "")
+
+; Parse the form script
+if !ParseFormScript(targetScript)
+{
+    MsgBox, 48, CoordHelper, Failed to parse form script: %targetScript%
+    ExitApp
+}
+
+controlCount := Controls.Length()
+
+; Try to find and activate Fill Sheet window
+if WinExist(TargetWindow)
+{
+    ; Fill Sheet is open - activate and start capturing immediately
+    WinActivate, %TargetWindow%
+    WinWaitActive, %TargetWindow%,, 3
+    Sleep, 300
+    
+    ; Get window position for tooltip centering
+    UpdateWindowPosition()
+    
+    ; Start capturing automatically
+    GoSub, DoStartCapture
+}
+else
+{
+    ; Fill Sheet not found - wait for user to open it and press F1
+    WaitingForF1 := true
+    ToolTip, Parsed %FormName% - %controlCount% controls`n`nFill Sheet not found!`nOpen it in Open Dental`, then press F1`n`nPress Escape to abort, 100, 100
+}
 return
 
-Main()
-{
-    ; Get target form from command line argument
-    targetScript := A_Args[1]
-    if (targetScript = "")
+; ==============================================================================
+; Hotkeys
+; ==============================================================================
+
+F1::
+    if (!WaitingForF1)
+        return
+    
+    ; Check if Fill Sheet window exists now
+    if !WinExist(TargetWindow)
     {
-        MsgBox, 48, CoordHelper, Usage: CoordHelper.ahk FormName.ahk`n`nExample: CoordHelper.ahk HillsboroOMFS.ahk
-        ExitApp
+        MsgBox, 48, CoordHelper, Could not find "%TargetWindow%" window.`nPlease open it in Open Dental first.
+        return
     }
     
-    ; Prepend Forms directory if needed
-    if !InStr(targetScript, "\")
-        targetScript := "..\Forms\" . targetScript
+    WaitingForF1 := false
     
-    ; Extract form name (without .ahk extension)
-    SplitPath, targetScript, fileName
-    FormName := RegExReplace(fileName, "\.ahk$", "")
+    ; Activate the window
+    WinActivate, %TargetWindow%
+    WinWaitActive, %TargetWindow%,, 3
+    Sleep, 300
     
-    ; Parse the form script
-    if !ParseFormScript(targetScript)
+    ; Get window position for tooltip centering
+    UpdateWindowPosition()
+    
+    ; Start capturing
+    GoSub, DoStartCapture
+return
+
+Escape::
+    IsCapturing := false
+    ; Only turn off click hotkey if it was registered
+    if (ClickHotkeyRegistered)
+        Hotkey, ~LButton, Off
+    ToolTip
+    MsgBox, 48, CoordHelper, Capture aborted. No changes saved.
+    ExitApp
+return
+
+~LButton::
+    if !IsCapturing
+        return
+    
+    ; Make sure Fill Sheet window is active
+    WinActivate, %TargetWindow%
+    Sleep, 50  ; Give window time to activate
+    
+    ; Update window position in case user moved it
+    UpdateWindowPosition()
+    
+    ; Get mouse position relative to client area
+    MouseGetPos, mouseX, mouseY
+    
+    ; Store coordinates
+    ctrl := Controls[CurrentIndex]
+    ctrl.x := mouseX
+    ctrl.y := mouseY
+    Controls[CurrentIndex] := ctrl
+    
+    ; Move to next control
+    CurrentIndex++
+    
+    if (CurrentIndex > Controls.Length())
     {
-        MsgBox, 48, CoordHelper, Failed to parse form script: %targetScript%
+        ; All done!
+        IsCapturing := false
+        Hotkey, ~LButton, Off
+        ToolTip
+        
+        ; Save to INI
+        SaveMappings()
+        
+        MsgBox, 64, CoordHelper, Coordinate capture complete!`n`nMappings saved to:`n%ConfigPath%
         ExitApp
     }
+    else
+    {
+        ; Show next prompt
+        Sleep, 200  ; Small delay to avoid double-clicks
+        ShowCurrentPrompt()
+    }
+return
+
+; ==============================================================================
+; Start Capture Subroutine
+; ==============================================================================
+DoStartCapture:
+    IsCapturing := true
+    CurrentIndex := 1
     
-    ; Show summary of what was found
-    controlCount := Controls.Length()
-    ; MsgBox, 64, CoordHelper, Parsed %FormName%`n`nSpecialist: %SpecialistName%`nControls found: %controlCount%`n`nClick OK, then open the "Fill Sheet" window in Open Dental.`nPress F1 when ready to start capturing coordinates.`nPress Escape at any time to abort.
+    ; Enable click handler
+    Hotkey, ~LButton, On
+    ClickHotkeyRegistered := true
     
-    ; Set up hotkeys
-    Hotkey, F1, StartCapture
-    Hotkey, Escape, AbortCapture
-    
-    ; Show waiting tooltip
-    ToolTip, Parsed %FormName% - %controlCount% controls`nOpen "Fill Sheet" window and press F1 to start`nPress Escape to abort, 100, 100
-}
+    ; Show first control prompt
+    ShowCurrentPrompt()
+return
 
 ; ==============================================================================
 ; Parse Form Script
 ; ==============================================================================
 ParseFormScript(scriptPath)
 {
+    global Controls, SpecialistName
+    
     FileRead, content, %scriptPath%
     if ErrorLevel
         return false
@@ -144,74 +255,20 @@ ParseFormScript(scriptPath)
 }
 
 ; ==============================================================================
-; Capture Coordinates
+; Helper Functions
 ; ==============================================================================
-StartCapture:
-    ; Check if Fill Sheet window exists
-    if !WinExist(TargetWindow)
-    {
-        MsgBox, 48, CoordHelper, Could not find "%TargetWindow%" window.`nPlease open it in Open Dental first.
-        return
-    }
-    
-    ; Activate the window
-    WinActivate, %TargetWindow%
-    WinWaitActive, %TargetWindow%,, 3
-    
-    ; Start capturing
-    IsCapturing := true
-    CurrentIndex := 1
-    
-    ; Set up click handler
-    Hotkey, ~LButton, CaptureClick, On
-    
-    ; Show first control prompt
-    ShowCurrentPrompt()
-return
 
-CaptureClick:
-    if !IsCapturing
-        return
-    
-    ; Make sure Fill Sheet window is active
-    WinActivate, %TargetWindow%
-    Sleep, 50  ; Give window time to activate
-    
-    ; Get mouse position relative to client area
-    MouseGetPos, mouseX, mouseY
-    
-    ; Store coordinates
-    ctrl := Controls[CurrentIndex]
-    ctrl.x := mouseX
-    ctrl.y := mouseY
-    Controls[CurrentIndex] := ctrl
-    
-    ; Move to next control
-    CurrentIndex++
-    
-    if (CurrentIndex > Controls.Length())
-    {
-        ; All done!
-        IsCapturing := false
-        Hotkey, ~LButton, Off
-        ToolTip
-        
-        ; Save to INI
-        SaveMappings()
-        
-        MsgBox, 64, CoordHelper, Coordinate capture complete!`n`nMappings saved to:`n%ConfigPath%
-        ExitApp
-    }
-    else
-    {
-        ; Show next prompt
-        Sleep, 200  ; Small delay to avoid double-clicks
-        ShowCurrentPrompt()
-    }
-return
+; Get Fill Sheet window position for tooltip centering
+UpdateWindowPosition()
+{
+    global TargetWindow, WinX, WinY, WinW, WinH
+    WinGetPos, WinX, WinY, WinW, WinH, %TargetWindow%
+}
 
 ShowCurrentPrompt()
 {
+    global Controls, CurrentIndex, WinX, WinY, WinW
+    
     ctrl := Controls[CurrentIndex]
     total := Controls.Length()
     
@@ -222,17 +279,17 @@ ShowCurrentPrompt()
         prompt .= "`nOptions: " . ctrl.options
     prompt .= "`n`nPress Escape to abort"
     
-    ; Show tooltip near top of screen
-    ToolTip, %prompt%, 100, 50
+    ; Position tooltip centered above Fill Sheet window
+    ; Estimate tooltip width ~250px, height ~80px
+    tooltipX := WinX + (WinW // 2) - 125
+    tooltipY := WinY - 90
+    
+    ; Make sure tooltip doesn't go off-screen top
+    if (tooltipY < 10)
+        tooltipY := 10
+    
+    ToolTip, %prompt%, %tooltipX%, %tooltipY%
 }
-
-AbortCapture:
-    IsCapturing := false
-    Hotkey, ~LButton, Off
-    ToolTip
-    MsgBox, 48, CoordHelper, Capture aborted. No changes saved.
-    ExitApp
-return
 
 ; ==============================================================================
 ; Save Mappings to INI

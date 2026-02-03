@@ -7,6 +7,9 @@
 #SingleInstance, Force
 SetWorkingDir %A_ScriptDir%
 
+; Include OD Automation library for navigation
+#Include %A_ScriptDir%\..\Lib\ODAutomation.ahk
+
 ; ==============================================================================
 ; Configuration
 ; ==============================================================================
@@ -70,9 +73,36 @@ if WinExist(TargetWindow)
 }
 else
 {
-    ; Fill Sheet not found - wait for user to open it and press F1
-    WaitingForF1 := true
-    ToolTip, Parsed %FormName% - %controlCount% controls`n`nFill Sheet not found!`nOpen it in Open Dental`, then press F1`n`nPress Escape to abort, 100, 100
+    ; Fill Sheet not found - try to navigate there automatically
+    ToolTip, Navigating to Fill Sheet for %SpecialistName%...`nPlease wait..., 100, 100
+    
+    ; Try to activate Open Dental
+    if WinExist("Open Dental {")
+    {
+        WinActivate, Open Dental {
+        Sleep, 300
+        
+        ; Navigate to Fill Sheet using ODAutomation
+        if NavigateToFillSheet(SpecialistName)
+        {
+            ; Success! Fill Sheet should now be open
+            Sleep, 300
+            UpdateWindowPosition()
+            GoSub, DoStartCapture
+        }
+        else
+        {
+            ; Navigation failed - fall back to manual mode
+            WaitingForF1 := true
+            ToolTip, Navigation failed!`n`nManually open Fill Sheet for:`n%SpecialistName%`n`nThen press F1`n`nPress Escape to abort, 100, 100
+        }
+    }
+    else
+    {
+        ; Open Dental not running - manual mode
+        WaitingForF1 := true
+        ToolTip, Open Dental not found!`n`nOpen Fill Sheet for:`n%SpecialistName%`n`nThen press F1`n`nPress Escape to abort, 100, 100
+    }
 }
 return
 

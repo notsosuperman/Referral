@@ -185,6 +185,10 @@ ODEnsureChartView()
 ; Returns: true if window appeared, false on timeout
 WaitWin(windowTitle, timeoutSeconds := 3, description := "")
 {
+    ; Save current TitleMatchMode and use exact match to avoid false matches
+    oldMode := A_TitleMatchMode
+    SetTitleMatchMode, 3
+    
     if (description = "")
         description := windowTitle
     
@@ -195,18 +199,26 @@ WaitWin(windowTitle, timeoutSeconds := 3, description := "")
     if ErrorLevel
     {
         Checkpoint("TIMEOUT waiting for: " . description, true)
+        SetTitleMatchMode, %oldMode%  ; Restore original mode
         return false
     }
     
     WinActivate, %windowTitle%
     Sleep, 100
     Checkpoint("Found: " . description, true)
+    
+    ; Restore original TitleMatchMode
+    SetTitleMatchMode, %oldMode%
     return true
 }
 
 ; Wait for window to be active
 WaitWinActive(windowTitle, timeoutSeconds := 3, description := "")
 {
+    ; Save current TitleMatchMode and use exact match to avoid false matches
+    oldMode := A_TitleMatchMode
+    SetTitleMatchMode, 3
+    
     if (description = "")
         description := windowTitle
     
@@ -217,10 +229,14 @@ WaitWinActive(windowTitle, timeoutSeconds := 3, description := "")
     if ErrorLevel
     {
         Checkpoint("TIMEOUT waiting for active: " . description, true)
+        SetTitleMatchMode, %oldMode%  ; Restore original mode
         return false
     }
     
     Checkpoint("Active: " . description, true)
+    
+    ; Restore original TitleMatchMode
+    SetTitleMatchMode, %oldMode%
     return true
 }
 
@@ -266,10 +282,13 @@ PasteText(text)
     
     ; Clear clipboard first to ensure ClipWait works properly
     Clipboard := ""
-    Sleep, 50
+    Sleep, 100
     
     ; Set clipboard to desired text
     Clipboard := text
+    
+    ; Give Windows time to process clipboard change before waiting
+    Sleep, 100
     
     ; Wait for clipboard to be ready (2 second timeout)
     ClipWait, 2
@@ -281,12 +300,20 @@ PasteText(text)
         return false
     }
     
-    ; Verify clipboard contains expected text
+    ; Verify clipboard contains expected text (with retry if needed)
     if (Clipboard != text)
     {
         Checkpoint("PasteText: WARNING - Clipboard mismatch, retrying", false)
         Clipboard := text
-        ClipWait, 1
+        Sleep, 100
+        ClipWait, 2
+        if (ErrorLevel || Clipboard != text)
+        {
+            Checkpoint("PasteText: FAILED - Clipboard still incorrect after retry", false)
+            Clipboard := ClipboardBackup
+            ClipboardBackup := ""
+            return false
+        }
     }
     
     Checkpoint("PasteText: Clipboard ready, pasting", false)

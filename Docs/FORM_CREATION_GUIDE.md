@@ -2,6 +2,8 @@
 
 This document contains everything needed to create new AHK v1 referral forms for the Dental Referral System. Use this with the Open Dental XML export to generate a working form.
 
+**IMPORTANT:** When creating forms, always prefer the XML export over PNG screenshots. The XML contains the authoritative list of editable fields (InputField, ComboBox, CheckBox). PNG screenshots may show additional read-only fields (OutputText, StaticText, Image) that should NOT be encoded in the GUI - only XML fields should be included.
+
 ---
 
 ## Table of Contents
@@ -49,10 +51,8 @@ Config/
 ; ==============================================================================
 ; [Form Description] Referral Slip - AHK v1
 ; Based on Open Dental Sheet XML Export
-; WINDOW_TITLE: [Form Name] Referral Slip
 ; SPECIALIST_NAME: [Category] - [Full Practice Name]
 ; FORM_NAME: [CamelCaseFormName]
-; DISPLAY_NAME: [Category] - [Display Name]
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force
@@ -64,27 +64,18 @@ SetWorkingDir %A_ScriptDir%
 
 ### Header Field Definitions
 
-**WINDOW_TITLE:**
-- Used by ScreenshotHelper to detect window
-- Format: `[FormName] Referral Slip`
-- Example: `Hillsboro OMFS Referral Slip`
-
 **SPECIALIST_NAME:**
+- Used for both window title and launcher button text
 - Used in Mappings.ini for Open Dental search
 - Format: `[Category] - [Full Practice Name]`
 - Example: `OS - Hillsboro OMFS` or `Endo - Wolfe Dental Cedar Mill`
 - **This MUST match the specialist name in Open Dental exactly**
+- Window title format: `Referral - [SPECIALIST_NAME]` (automatically generated)
 
 **FORM_NAME:**
 - Internal identifier, CamelCase, no spaces
 - Used for Mappings.ini section names and Presets.ini
 - Example: `HillsboroOMFS`, `NorthwestPerio`, `Farham`
-
-**DISPLAY_NAME:**
-- Shown on launcher buttons
-- Format: `[Category] - [Display Name]`
-- Example: `OS - Hillsboro OMFS`, `Perio - Northwest Periodontics`
-- **Required** for LauncherDynamic.ahk to discover form
 
 ---
 
@@ -146,38 +137,23 @@ return
 
 BuildReferralForm()
 {
+    ; Get specialist name for window title
+    specialistName := PS_GetSpecialistName()
+    windowTitle := "Referral - " . specialistName
+    
     ; GUI Setup
-    Gui, Main:New, , [Window Title]
+    Gui, Main:New, , %windowTitle%
     Gui, Main:Color, FFFFFF
     
-    ; ===========================================================================
-    ; HEADER SECTION (Lines 1-3)
-    ; ===========================================================================
+    ; Build standard header (modifies yPos by reference)
     yPos := 20
-    
-    ; Line 1: Office Name (display only)
-    Gui, Main:Font, s14 Bold, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w580 cNavy vTxtOfficeName, %OfficeName%
-    
-    ; Line 2: Patient Name (display only)
-    yPos += 28
-    Gui, Main:Font, s12 Normal, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w580 vTxtPatientName, Patient: %PatientName%
-    
-    ; Line 3: Referring Doctor Dropdown
-    yPos += 28
-    Gui, Main:Font, s10 Normal, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w100 h22 +0x200, Referring Dentist:
-    Gui, Main:Add, DropDownList, x125 y%yPos% w180 vReferralSource, Dr. Gabe Proulx|Dr. Curtis Wahlen|Dr. Ben Wolfe|Dr. Jae Lee
-    
-    ; Separator
-    yPos += 30
-    Gui, Main:Add, Text, x20 y%yPos% w580 h2 +0x10
+    formWidth := 580  ; Adjust per form (400, 500, 580 are common)
+    FT_BuildHeader(yPos, formWidth)
     
     ; ===========================================================================
     ; MAIN CONTENT (Form-specific fields)
     ; ===========================================================================
-    yPos += 10
+    ; yPos is already positioned after header - add your fields here...
     
     ; Add your form fields here...
     
@@ -196,6 +172,11 @@ BuildReferralForm()
     ; Show the GUI
     Gui, Main:Show, w620 h%winHeight%
 }
+
+; ==============================================================================
+; Include Standard Handlers
+; ==============================================================================
+#Include %A_ScriptDir%\..\Lib\FormHandlers.ahk
 ```
 
 ### Layout Guidelines
@@ -281,81 +262,43 @@ Gui, Main:Add, CheckBox, x120 y%yPos% w80 vchkRadiographsNo, No
 
 ## Event Handlers
 
-### Required Handlers
+### Standard Handlers (Automatic)
 
-**CRITICAL:** These MUST be exactly this format:
+**All button handlers are automatically provided via `FormHandlers.ahk` include.**
+
+Simply include this file at the end of your form (after `BuildReferralForm()`):
 
 ```ahk
 ; ==============================================================================
-; Event Handlers
+; Include Standard Handlers
 ; ==============================================================================
-
-BtnClearForm:
-    ClearForm()  ; Library function (auto-clears all fields from Mappings.ini)
-return
-
-BtnSubmit:
-    Gui, Main:Submit, NoHide
-    
-    ; Get form data (auto-generated from Mappings.ini)
-    formData := GetFormData()
-    
-    ; Hide form during transfer
-    Gui, Main:Hide
-    
-    ; Transfer to Open Dental
-    FormTransfer("[FormName]", formData)  ; Use your FORM_NAME
-    
-    ; Close form (no message)
-    ExitApp
-return
-
-; ==============================================================================
-; GUI Close Handler
-; ==============================================================================
-MainGuiClose:
-MainGuiEscape:
-    ExitApp
-return
-
-; ==============================================================================
-; Utility Functions
-; ==============================================================================
-SetPatientName(name)
-{
-    global PatientName
-    PatientName := name
-    GuiControl, Main:, TxtPatientName, Patient: %name%
-}
-
-SetOfficeName(name)
-{
-    global OfficeName
-    OfficeName := name
-    GuiControl, Main:, TxtOfficeName, %name%
-}
+#Include %A_ScriptDir%\..\Lib\FormHandlers.ahk
 ```
+
+This provides:
+- `BtnClearForm:` - Clears all form fields
+- `BtnSubmit:` - Submits form data to Open Dental
+- `MainGuiClose:` / `MainGuiEscape:` - Exits form
 
 **IMPORTANT:** 
 - NO field validation (removed per user request)
 - NO mutual exclusivity handlers for checkboxes (removed per user request)
 - `GetFormData()` is auto-generated from Mappings.ini (don't write manually)
 - `ClearForm()` is auto-generated from Mappings.ini (don't write manually)
+- `SetPatientName()` and `SetOfficeName()` are in FormTransfer.ahk library (automatically available)
 
 ---
 
 ## Complete Example Forms
 
-### Example 1: Farham (Simple Form - 177 lines)
+### Example 1: Farham (Simple Form - 112 lines, ~37% smaller!)
 
 ```ahk
 ; ==============================================================================
 ; Farham Referral Slip - AHK v1
 ; Based on Open Dental Sheet XML Export
-; WINDOW_TITLE: Farham Referral Slip
 ; SPECIALIST_NAME: Endo - Wolfe Dental Cedar Mill
 ; FORM_NAME: Farham
-; DISPLAY_NAME: Endo - Wolfe Dental Cedar Mill
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force
@@ -378,72 +321,54 @@ global TxtPatientName := ""
 ; User-editable fields
 global ReferralSource := ""
 
-; Notes
+; Notes field
 global txtNotes := ""
 
-; CBCT
+; CBCT question
 global chkCBCTYes := 0
 global chkCBCTNo := 0
 
-; PA
+; PA question
 global chkPAYes := 0
 global chkPANo := 0
-
-; ==============================================================================
-; Main Entry Point
-; ==============================================================================
-BuildReferralForm()
-InitPresets()
-return
 
 ; ==============================================================================
 ; Build the GUI
 ; ==============================================================================
 BuildReferralForm()
+InitPresets()
+return
+
+BuildReferralForm()
 {
-    ; GUI Setup
-    Gui, Main:New, , Farham Referral Slip
+    ; Get specialist name for window title
+    specialistName := PS_GetSpecialistName()
+    windowTitle := "Referral - " . specialistName
+    
+    ; Set GUI defaults
+    Gui, Main:New, +Resize +MinSize400x300, %windowTitle%
     Gui, Main:Color, FFFFFF
+    Gui, Main:Font, s11, Arial
     
-    ; ===========================================================================
-    ; HEADER SECTION
-    ; ===========================================================================
+    ; Build standard header (modifies yPos by reference)
     yPos := 20
-    
-    ; Line 1: Office Name (display only)
-    Gui, Main:Font, s14 Bold, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w400 cNavy vTxtOfficeName, %OfficeName%
-    
-    ; Line 2: Patient Name (display only)
-    yPos += 28
-    Gui, Main:Font, s12 Normal, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w400 vTxtPatientName, Patient: %PatientName%
-    
-    ; Line 3: Referring Doctor (in header)
-    yPos += 28
-    Gui, Main:Font, s10 Normal, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w100 h22 +0x200, Referring Doctor:
-    Gui, Main:Add, DropDownList, x125 y%yPos% w180 vReferralSource, Dr. Gabe Proulx|Dr. Curtis Wahlen|Dr. Ben Wolfe|Dr. Jae Lee
-    
-    ; Separator
-    yPos += 30
-    Gui, Main:Add, Text, x20 y%yPos% w400 h2 +0x10
+    formWidth := 400
+    FT_BuildHeader(yPos, formWidth)
     
     ; ===========================================================================
     ; For Treatment Including (Notes)
     ; ===========================================================================
-    yPos += 10
     Gui, Main:Font, s10 Bold Italic Underline, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w400, For Treatment Including
+    Gui, Main:Add, Text, x20 y%yPos% w200, For Treatment Including
     
-    yPos += 24
     Gui, Main:Font, s10 Normal, Arial
-    Gui, Main:Add, Edit, x20 y%yPos% w400 h120 vt txtNotes Multi
+    yPos += 24
+    Gui, Main:Add, Edit, x20 y%yPos% w400 h80 Multi vtxtNotes, %txtNotes%
     
     ; ===========================================================================
     ; CBCT Question
     ; ===========================================================================
-    yPos += 130
+    yPos += 95
     Gui, Main:Add, Text, x20 y%yPos% w400 h2 +0x10
     
     yPos += 10
@@ -464,76 +389,32 @@ BuildReferralForm()
     ; Action Buttons
     ; ===========================================================================
     yPos += 40
-    Gui, Main:Add, Button, x20 y%yPos% w100 h35 gBtnClearForm, Clear Form
-    Gui, Main:Add, Button, x320 y%yPos% w100 h35 gBtnSubmit Default, Submit Referral
+    Gui, Main:Add, Text, x20 y%yPos% w400 h2 +0x10
     
-    ; Calculate window height
-    winHeight := yPos + 50
+    yPos += 10
+    Gui, Main:Font, s10 Bold, Arial
+    Gui, Main:Add, Button, x20 y%yPos% w100 h35 gBtnClearForm, Clear Form
+    Gui, Main:Add, Button, x300 y%yPos% w120 h35 gBtnSubmit Default, Submit Referral
     
     ; Show the GUI
+    winHeight := yPos + 50
     Gui, Main:Show, w440 h%winHeight%
 }
 
 ; ==============================================================================
-; Event Handlers
+; Include Standard Handlers
 ; ==============================================================================
-
-BtnClearForm:
-    ClearForm()
-return
-
-BtnSubmit:
-    Gui, Main:Submit, NoHide
-    
-    ; Get form data
-    formData := GetFormData()
-    
-    ; Hide form during transfer
-    Gui, Main:Hide
-    
-    ; Transfer to Open Dental
-    FormTransfer("Farham", formData)
-    
-    ; Close form (no message)
-    ExitApp
-return
-
-; ==============================================================================
-; GUI Close Handler
-; ==============================================================================
-MainGuiClose:
-MainGuiEscape:
-    ExitApp
-return
-
-; ==============================================================================
-; Utility Functions
-; ==============================================================================
-SetPatientName(name)
-{
-    global PatientName
-    PatientName := name
-    GuiControl, Main:, TxtPatientName, Patient: %name%
-}
-
-SetOfficeName(name)
-{
-    global OfficeName
-    OfficeName := name
-    GuiControl, Main:, TxtOfficeName, %name%
-}
+#Include %A_ScriptDir%\..\Lib\FormHandlers.ahk
 ```
 
-### Example 2: Northwest Perio (Medium Complexity - 252 lines)
+### Example 2: Northwest Perio (Medium Complexity - 138 lines, ~45% smaller!)
 
 ```ahk
 ; ==============================================================================
 ; Northwest Periodontics Referral Slip - AHK v1
 ; Based on Open Dental Sheet XML Export
-; WINDOW_TITLE: Northwest Periodontics Referral Slip
 ; SPECIALIST_NAME: Perio - Northwest Periodontics
 ; FORM_NAME: NorthwestPerio
-; DISPLAY_NAME: Perio - Northwest Periodontics
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force
@@ -547,7 +428,7 @@ SetWorkingDir %A_ScriptDir%
 ; ==============================================================================
 ; Display only (set externally, not editable)
 global OfficeName := "Northwest Periodontics & Dental Implants"
-global PatientName := ""
+global PatientName := ""  ; Will be set when form is launched
 
 ; GUI Control variables (required for GuiControl updates)
 global TxtOfficeName := ""
@@ -556,7 +437,7 @@ global TxtPatientName := ""
 ; User-editable fields
 global ReferralSource := ""
 
-; Treatments
+; Treatment Types
 global chkImplantTreatment := 0
 global chkPeriodontalTreatment := 0
 global chkRecessionTreatment := 0
@@ -572,57 +453,38 @@ global chkPatientWillBring := 0
 global txtRemarks := ""
 
 ; ==============================================================================
-; Main Entry Point
+; Build the GUI
 ; ==============================================================================
 BuildReferralForm()
 InitPresets()
 return
 
-; ==============================================================================
-; Build the GUI
-; ==============================================================================
 BuildReferralForm()
 {
-    ; GUI Setup
-    Gui, Main:New, , Northwest Periodontics Referral Slip
+    ; Get specialist name for window title
+    specialistName := PS_GetSpecialistName()
+    windowTitle := "Referral - " . specialistName
+    
+    ; Set GUI defaults
+    Gui, Main:New, +Resize +MinSize400x400, %windowTitle%
     Gui, Main:Color, FFFFFF
+    Gui, Main:Font, s11, Arial
     
-    ; ===========================================================================
-    ; HEADER SECTION
-    ; ===========================================================================
+    ; Build standard header (modifies yPos by reference)
     yPos := 20
+    formWidth := 500
+    FT_BuildHeader(yPos, formWidth)
     
-    ; Line 1: Office Name (display only)
-    Gui, Main:Font, s14 Bold, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w500 cNavy vTxtOfficeName, %OfficeName%
-    
-    ; Line 2: Patient Name (display only)
-    yPos += 28
-    Gui, Main:Font, s12 Normal, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w500 vTxtPatientName, Patient: %PatientName%
-    
-    ; Line 3: Referring Dentist
-    yPos += 28
-    Gui, Main:Font, s10 Normal, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w100 h22 +0x200, Referring Dentist:
-    Gui, Main:Add, DropDownList, x125 y%yPos% w180 vReferralSource, Dr. Gabe Proulx|Dr. Curtis Wahlen|Dr. Ben Wolfe|Dr. Jae Lee
-    
-    ; Separator
-    yPos += 30
-    Gui, Main:Add, Text, x20 y%yPos% w500 h2 +0x10
+    colRight := 260  ; Right column X position
     
     ; ===========================================================================
-    ; Treatment Requested
+    ; Treatment Types
     ; ===========================================================================
-    yPos += 10
     Gui, Main:Font, s10 Bold Italic Underline, Arial
     Gui, Main:Add, Text, x20 y%yPos% w200, Treatment Requested
     
     Gui, Main:Font, s10 Normal, Arial
     yPos += 24
-    
-    ; Two-column layout
-    colRight := 270
     
     Gui, Main:Add, CheckBox, x20 y%yPos% w200 vchkImplantTreatment, Implant Treatment
     Gui, Main:Add, CheckBox, x%colRight% y%yPos% w200 vchkPeriodontalTreatment, Periodontal Treatment
@@ -662,14 +524,18 @@ BuildReferralForm()
     
     yPos += 24
     Gui, Main:Font, s10 Normal, Arial
-    Gui, Main:Add, Edit, x20 y%yPos% w500 h80 vtxtRemarks Multi
+    Gui, Main:Add, Edit, x20 y%yPos% w500 h100 Multi vtxtRemarks, %txtRemarks%
     
     ; ===========================================================================
     ; Action Buttons
     ; ===========================================================================
-    yPos += 95
+    yPos += 115
+    Gui, Main:Add, Text, x20 y%yPos% w500 h2 +0x10
+    
+    yPos += 10
+    Gui, Main:Font, s10 Bold, Arial
     Gui, Main:Add, Button, x20 y%yPos% w100 h35 gBtnClearForm, Clear Form
-    Gui, Main:Add, Button, x420 y%yPos% w100 h35 gBtnSubmit Default, Submit Referral
+    Gui, Main:Add, Button, x400 y%yPos% w120 h35 gBtnSubmit Default, Submit Referral
     
     ; Calculate window height
     winHeight := yPos + 50
@@ -679,65 +545,19 @@ BuildReferralForm()
 }
 
 ; ==============================================================================
-; Event Handlers
+; Include Standard Handlers
 ; ==============================================================================
-
-BtnClearForm:
-    ClearForm()
-return
-
-BtnSubmit:
-    Gui, Main:Submit, NoHide
-    
-    ; Get form data
-    formData := GetFormData()
-    
-    ; Hide form during transfer
-    Gui, Main:Hide
-    
-    ; Transfer to Open Dental
-    FormTransfer("NorthwestPerio", formData)
-    
-    ; Close form (no message)
-    ExitApp
-return
-
-; ==============================================================================
-; GUI Close Handler
-; ==============================================================================
-MainGuiClose:
-MainGuiEscape:
-    ExitApp
-return
-
-; ==============================================================================
-; Utility Functions
-; ==============================================================================
-SetPatientName(name)
-{
-    global PatientName
-    PatientName := name
-    GuiControl, Main:, TxtPatientName, Patient: %name%
-}
-
-SetOfficeName(name)
-{
-    global OfficeName
-    OfficeName := name
-    GuiControl, Main:, TxtOfficeName, %name%
-}
+#Include %A_ScriptDir%\..\Lib\FormHandlers.ahk
 ```
 
-### Example 3: Hillsboro OMFS (Complex Form - 282 lines)
+### Example 3: Hillsboro OMFS (Complex Form - 216 lines, ~23% smaller!)
 
 ```ahk
 ; ==============================================================================
 ; Hillsboro OMFS Referral Slip - AHK v1
 ; Based on Open Dental Sheet XML Export
-; WINDOW_TITLE: Hillsboro OMFS Referral Slip
 ; SPECIALIST_NAME: OS - Hillsboro OMFS
 ; FORM_NAME: HillsboroOMFS
-; DISPLAY_NAME: OS - Hillsboro OMFS
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force
@@ -751,7 +571,7 @@ SetWorkingDir %A_ScriptDir%
 ; ==============================================================================
 ; Display only (set externally, not editable)
 global OfficeName := "Hillsboro Oral & Maxillofacial Surgery"
-global PatientName := ""
+global PatientName := ""  ; Will be set when form is launched
 
 ; GUI Control variables (required for GuiControl updates)
 global TxtOfficeName := ""
@@ -791,57 +611,39 @@ global chkEnclosedEmailed := 0
 global chkGivenToPatient := 0
 global chkTakeNewOnes := 0
 
-; Notes
+; Management Notes
 global txtManagementNotes := ""
 
 ; Who Calls
 global chkPleaseCallPatient := 0
-global chkPatientWillCall := 1  ; Default checked
-
-; ==============================================================================
-; Main Entry Point
-; ==============================================================================
-BuildReferralForm()
-InitPresets()
-return
+global chkPatientWillCall := 1
 
 ; ==============================================================================
 ; Build the GUI
 ; ==============================================================================
 BuildReferralForm()
+InitPresets()
+return
+
+BuildReferralForm()
 {
-    ; GUI Setup
-    Gui, Main:New, , Hillsboro OMFS Referral Slip
+    ; Get specialist name for window title
+    specialistName := PS_GetSpecialistName()
+    windowTitle := "Referral - " . specialistName
+    
+    ; Set GUI defaults
+    Gui, Main:New, +Resize +MinSize500x600, %windowTitle%
     Gui, Main:Color, FFFFFF
+    Gui, Main:Font, s11, Arial
     
-    ; ===========================================================================
-    ; HEADER SECTION
-    ; ===========================================================================
+    ; Build standard header (modifies yPos by reference)
     yPos := 20
-    
-    ; Line 1: Office Name (display only)
-    Gui, Main:Font, s14 Bold, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w580 cNavy vTxtOfficeName, %OfficeName%
-    
-    ; Line 2: Patient Name (display only)
-    yPos += 28
-    Gui, Main:Font, s12 Normal, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w580 vTxtPatientName, Patient: %PatientName%
-    
-    ; Line 3: Referring Dentist (in header)
-    yPos += 28
-    Gui, Main:Font, s10 Normal, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w100 h22 +0x200, Referring Dentist:
-    Gui, Main:Add, DropDownList, x125 y%yPos% w180 vReferralSource, Dr. Gabe Proulx|Dr. Curtis Wahlen|Dr. Ben Wolfe|Dr. Jae Lee
-    
-    ; Separator
-    yPos += 30
-    Gui, Main:Add, Text, x20 y%yPos% w580 h2 +0x10
+    formWidth := 580
+    FT_BuildHeader(yPos, formWidth)
     
     ; ===========================================================================
     ; Who Calls (on same row)
     ; ===========================================================================
-    yPos += 10
     Gui, Main:Add, CheckBox, x20 y%yPos% w150 h22 vchkPleaseCallPatient, Please call patient
     Gui, Main:Add, CheckBox, x200 y%yPos% w230 h22 vchkPatientWillCall Checked, Patient will call for appointment
     
@@ -849,158 +651,124 @@ BuildReferralForm()
     ; Teeth / Area to be Treated
     ; ===========================================================================
     yPos += 30
-    Gui, Main:Add, Text, x20 y%yPos% w180 h22 +0x200, Teeth # or area to be treated:
-    Gui, Main:Add, Edit, x205 y%yPos% w375 h22 vTeethAreaToTreat
+    Gui, Main:Add, Text, x20 y%yPos% w170 h22 +0x200, Teeth # or area to be treated:
+    Gui, Main:Add, Edit, x195 y%yPos% w385 h22 vTeethAreaToTreat, %TeethAreaToTreat%
+    
+    ; Separator
+    yPos += 30
+    Gui, Main:Add, Text, x20 y%yPos% w580 h2 +0x10
     
     ; ===========================================================================
-    ; Procedure(s) Requested
+    ; Procedures and Consultations - Two Column Layout
     ; ===========================================================================
-    yPos += 35
+    yPos += 10
+    baseY := yPos
+    colRight := 380  ; Right column X position
+    
+    ; ----- LEFT COLUMN: Procedures Requested -----
     Gui, Main:Font, s10 Bold Italic Underline, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w300, Procedure(s) Requested
+    Gui, Main:Add, Text, x20 y%yPos% w250, Procedure(s) Requested
     
     Gui, Main:Font, s10 Normal, Arial
-    yPos += 24
+    yPos += 22
+    Gui, Main:Add, CheckBox, x20 y%yPos% w150 vchkExtraction, Extraction(s)
+    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w150 vchkAlveoloplasty, Alveoloplasty
     
-    ; Two-column layout
-    colRight := 310
+    yPos += 22
+    Gui, Main:Add, CheckBox, x20 y%yPos% w300 vchkDiscussImplants, Would you like us to discuss implants
+    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w150 vchkFrenectomy, Frenectomy
     
-    Gui, Main:Add, CheckBox, x20 y%yPos% w250 vchkExtraction, Extraction(s)
-    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w250 vchkAlveoloplasty, Alveoloplasty
+    yPos += 22
+    Gui, Main:Add, Text, x35 y%yPos% w150 h22, or bone grafting?
+    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w150 vchkExposureBond, Exposure / Bond
     
-    yPos += 24
-    Gui, Main:Add, CheckBox, x20 y%yPos% w250 vchkDiscussImplants, Would you like us to discuss implants`nor bone grafting?
-    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w250 vchkFrenectomy, Frenectomy
+    yPos += 22
+    Gui, Main:Add, CheckBox, x20 y%yPos% w150 vchkBiopsyExcision, Biopsy / Excision
+    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w160 vchkIncisionDrainage, Incision / Drainage
     
-    yPos += 24
-    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w250 vchkExposureBond, Exposure / Bond
+    yPos += 22
+    Gui, Main:Add, CheckBox, x20 y%yPos% w55 vchkProcedureOther, Other:
+    Gui, Main:Add, Edit, x80 y%yPos% w280 h22 vtxtProcedureOther, %txtProcedureOther%
     
-    yPos += 24
-    Gui, Main:Add, CheckBox, x20 y%yPos% w250 vchkBiopsyExcision, Biopsy / Excision
-    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w250 vchkIncisionDrainage, Incision / Drainage
+    yPos += 28
+    Gui, Main:Add, CheckBox, x20 y%yPos% w170 vchkConeBeamCT, Cone Beam CT Scan
     
-    yPos += 24
-    Gui, Main:Add, CheckBox, x20 y%yPos% w40 vchkProcedureOther, Other:
-    Gui, Main:Add, Edit, x65 y%yPos% w515 h22 vtxtProcedureOther
-    
-    yPos += 24
-    Gui, Main:Add, CheckBox, x20 y%yPos% w250 vchkConeBeamCT, Cone Beam CT Scan
-    
-    ; ===========================================================================
-    ; Consultation(s) Requested
-    ; ===========================================================================
-    yPos += 35
+    ; ----- LEFT COLUMN: Consultations Requested -----
+    yPos += 30
+    consultBaseY := yPos
     Gui, Main:Font, s10 Bold Italic Underline, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w300, Consultation(s) Requested
+    Gui, Main:Add, Text, x20 y%yPos% w250, Consultation(s) Requested
     
     Gui, Main:Font, s10 Normal, Arial
-    yPos += 24
+    yPos += 22
     
-    Gui, Main:Add, CheckBox, x20 y%yPos% w250 vchkDentalImplants, Dental implants
-    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w250 vchkOralPathology, Oral Pathology
+    Gui, Main:Add, CheckBox, x20 y%yPos% w150 vchkDentalImplants, Dental implants
+    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w150 vchkOralPathology, Oral Pathology
     
-    yPos += 24
-    Gui, Main:Add, CheckBox, x20 y%yPos% w250 vchkSinusLift, Sinus Lift
-    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w250 vchkSoftTissueGrafting, Soft tissue grafting
+    yPos += 22
+    Gui, Main:Add, CheckBox, x20 y%yPos% w120 vchkSinusLift, Sinus Lift
+    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w170 vchkSoftTissueGrafting, Soft tissue grafting
     
-    yPos += 24
-    Gui, Main:Add, CheckBox, x20 y%yPos% w250 vchkBoneGrafting, Bone grafting
-    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w250 vchkSkinLesions, Skin lesions
+    yPos += 22
+    Gui, Main:Add, CheckBox, x20 y%yPos% w130 vchkBoneGrafting, Bone grafting
+    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w130 vchkSkinLesions, Skin lesions
     
-    yPos += 24
-    Gui, Main:Add, CheckBox, x20 y%yPos% w250 vchkFacialTrauma, Facial Trauma
+    yPos += 22
+    Gui, Main:Add, CheckBox, x20 y%yPos% w130 vchkFacialTrauma, Facial Trauma
     
-    yPos += 24
-    Gui, Main:Add, CheckBox, x20 y%yPos% w40 vchkConsultOther, Other:
-    Gui, Main:Add, Edit, x65 y%yPos% w515 h22 vtxtConsultOther
+    yPos += 22
+    Gui, Main:Add, CheckBox, x20 y%yPos% w55 vchkConsultOther, Other:
+    Gui, Main:Add, Edit, x80 y%yPos% w280 h22 vtxtConsultOther, %txtConsultOther%
     
     ; ===========================================================================
     ; Radiograph Requests
     ; ===========================================================================
     yPos += 35
+    Gui, Main:Add, Text, x20 y%yPos% w580 h2 +0x10
+    
+    yPos += 8
     Gui, Main:Font, s10 Bold Italic Underline, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w300, Radiograph Requests
+    Gui, Main:Add, Text, x20 y%yPos% w150, Radiograph Requests
     
     Gui, Main:Font, s10 Normal, Arial
-    yPos += 24
-    
-    Gui, Main:Add, CheckBox, x20 y%yPos% w150 vchkEnclosedEmailed Checked, Enclosed/Emailed
-    Gui, Main:Add, CheckBox, x180 y%yPos% w140 vchkGivenToPatient, Given to patient
-    Gui, Main:Add, CheckBox, x330 y%yPos% w180 vchkTakeNewOnes, Please take new ones
+    yPos += 22
+    Gui, Main:Add, CheckBox, x20 y%yPos% w150 vchkEnclosedEmailed, Enclosed/Emailed
+    Gui, Main:Add, CheckBox, x200 y%yPos% w150 vchkGivenToPatient, Given to patient
+    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w180 vchkTakeNewOnes, Please take new ones
     
     ; ===========================================================================
-    ; Management, Medical or Treatment concerns
+    ; Management, Medical or Treatment Concerns
     ; ===========================================================================
     yPos += 35
-    Gui, Main:Font, s10 Bold Italic Underline, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w400, Management, Medical or Treatment concerns
+    Gui, Main:Add, Text, x20 y%yPos% w580 h2 +0x10
     
-    yPos += 24
+    yPos += 8
+    Gui, Main:Font, s10 Bold Italic Underline, Arial
+    Gui, Main:Add, Text, x20 y%yPos% w350, Management, Medical or Treatment concerns
+    
     Gui, Main:Font, s10 Normal, Arial
-    Gui, Main:Add, Edit, x20 y%yPos% w580 h100 vtxtManagementNotes Multi
+    yPos += 22
+    Gui, Main:Add, Edit, x20 y%yPos% w580 h80 Multi vtxtManagementNotes, %txtManagementNotes%
     
     ; ===========================================================================
     ; Action Buttons
     ; ===========================================================================
-    yPos += 115
+    yPos += 95
+    Gui, Main:Add, Text, x20 y%yPos% w580 h2 +0x10
+    
+    yPos += 10
+    Gui, Main:Font, s10 Bold, Arial
     Gui, Main:Add, Button, x20 y%yPos% w100 h35 gBtnClearForm, Clear Form
     Gui, Main:Add, Button, x460 y%yPos% w140 h35 gBtnSubmit Default, Submit Referral
     
-    ; Calculate window height
-    winHeight := yPos + 50
-    
     ; Show the GUI
-    Gui, Main:Show, w620 h%winHeight%
+    Gui, Main:Show, w620 h750
 }
 
 ; ==============================================================================
-; Event Handlers
+; Include Standard Handlers
 ; ==============================================================================
-
-BtnClearForm:
-    ClearForm()
-return
-
-BtnSubmit:
-    Gui, Main:Submit, NoHide
-    
-    ; Get form data
-    formData := GetFormData()
-    
-    ; Hide form during transfer
-    Gui, Main:Hide
-    
-    ; Transfer to Open Dental
-    FormTransfer("HillsboroOMFS", formData)
-    
-    ; Close form (no message)
-    ExitApp
-return
-
-; ==============================================================================
-; GUI Close Handler
-; ==============================================================================
-MainGuiClose:
-MainGuiEscape:
-    ExitApp
-return
-
-; ==============================================================================
-; Utility Functions
-; ==============================================================================
-SetPatientName(name)
-{
-    global PatientName
-    PatientName := name
-    GuiControl, Main:, TxtPatientName, Patient: %name%
-}
-
-SetOfficeName(name)
-{
-    global OfficeName
-    OfficeName := name
-    GuiControl, Main:, TxtOfficeName, %name%
-}
+#Include %A_ScriptDir%\..\Lib\FormHandlers.ahk
 ```
 
 ---
@@ -1008,6 +776,13 @@ SetOfficeName(name)
 ## Post-Creation Steps
 
 After creating a new form, follow these steps to integrate it into the system:
+
+**Note on XML vs PNG:** Always use the XML export as the source of truth for which fields to include. The XML contains `FieldType` attributes that identify editable fields:
+- `InputField` → Text field or multiline (use `Edit` control)
+- `ComboBox` → Dropdown (use `DropDownList` control)
+- `CheckBox` → Checkbox (use `CheckBox` control)
+
+Ignore `OutputText`, `StaticText`, and `Image` field types - these are read-only and should NOT be encoded in the GUI. PNG screenshots may show these read-only fields, but they should be excluded from the form.
 
 ### Step 1: Test the Form
 
@@ -1107,21 +882,24 @@ $forms = @("Farham", "HillsboroOMFS", "NorthwestPerio", "YourNewForm")
 ## Critical Rules Summary
 
 ### ✅ DO:
-- Include ALL headers (WINDOW_TITLE, SPECIALIST_NAME, FORM_NAME, DISPLAY_NAME)
+- Include ALL required headers (SPECIALIST_NAME, FORM_NAME)
 - Match SPECIALIST_NAME to Open Dental exactly
 - Use consistent variable naming across script
 - Include `#Include %A_ScriptDir%\..\Lib\FormTransfer.ahk`
+- Call `FT_BuildHeader(yPos, formWidth)` to build header section
 - Call `InitPresets()` after building GUI
-- Use `ClearForm()` (don't write custom clear logic)
-- Use `GetFormData()` (auto-generated, don't write manually)
-- Follow the 3-line header pattern (Office/Patient/Referring Doctor)
+- Include `#Include %A_ScriptDir%\..\Lib\FormHandlers.ahk` at end of form
+- Use window title format: `"Referral - " . SPECIALIST_NAME`
 - Use Clear Form and Submit Referral buttons
 
 ### ❌ DON'T:
+- Write custom header code (use `FT_BuildHeader()` instead)
+- Write custom button handlers (use FormHandlers.ahk include)
+- Write `SetPatientName()` or `SetOfficeName()` functions (in library)
 - Add field validation (removed per user request)
 - Add mutual exclusivity handlers for checkboxes (removed per user request)
 - Write custom `GetFormData()` function (auto-generated)
-- Write custom `BtnClearForm` logic (use `ClearForm()`)
+- Write custom `BtnClearForm` logic (use FormHandlers.ahk include)
 - Forget to call `InitPresets()` after GUI build
 - Use different variable names in different places
 
@@ -1155,7 +933,8 @@ Project Root/
 ├── Forms/
 │   └── YourNewForm.ahk         ← Your new form
 ├── Lib/
-│   ├── FormTransfer.ahk        ← Don't edit
+│   ├── FormTransfer.ahk        ← Don't edit (includes header builder)
+│   ├── FormHandlers.ahk        ← Don't edit (standard button handlers)
 │   ├── ODAutomation.ahk        ← Don't edit
 │   └── Logging.ahk             ← Don't edit
 ├── Config/

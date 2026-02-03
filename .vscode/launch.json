@@ -80,6 +80,21 @@
                 ]
             },
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Build and Deploy to Server",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/Build.ps1",
+            "windows": {
+                "runtimeExecutable": "powershell.exe",
+                "runtimeArgs": [
+                    "-ExecutionPolicy", "Bypass",
+                    "-File", "${workspaceFolder}/Build.ps1"
+                ]
+            },
+            "console": "integratedTerminal",
+            "preLaunchTask": "Deploy to Server (Build + Copy)"
         }
     ]
 }

@@ -280,7 +280,7 @@ FT_FillForm(mappings, formData)
                 Sleep, %FT_ActionDelay%
                 Send, ^a
                 Sleep, %FT_ActionDelay%
-                SendInput, %value%
+                SendRaw, %value%
                 Sleep, %FT_ActionDelay%
                 Checkpoint("Filled: " . mapping.var . " = " . SubStr(value, 1, 30), false)
             }
@@ -489,6 +489,111 @@ ClearForm()
 }
 
 ; ==============================================================================
+; FORM HEADER AND UTILITY FUNCTIONS
+; ==============================================================================
+
+; ==============================================================================
+; FT_BuildHeader - Build standard form header (Office Name, Patient Name, Referring Doctor)
+; Parameters:
+;   yPos (ByRef) - Starting Y position, modified to position after header
+;   formWidth - Width of form content area (for separator line)
+; ==============================================================================
+FT_BuildHeader(ByRef yPos, formWidth)
+{
+    global OfficeName
+    global PatientName
+    global ReferralSource
+    
+    ; Line 1: Office Name (display only)
+    Gui, Main:Font, s14 Bold, Arial
+    Gui, Main:Add, Text, x20 y%yPos% w%formWidth% cNavy vTxtOfficeName, %OfficeName%
+    
+    ; Line 2: Patient Name (display only)
+    yPos += 28
+    Gui, Main:Font, s12 Normal, Arial
+    Gui, Main:Add, Text, x20 y%yPos% w%formWidth% vTxtPatientName, Patient: %PatientName%
+    
+    ; Line 3: Referring Dentist Dropdown
+    yPos += 28
+    Gui, Main:Font, s10 Normal, Arial
+    Gui, Main:Add, Text, x20 y%yPos% w100 h22 +0x200, Referring Dentist:
+    ; Hardcoded referring doctor options - update here when doctors change
+    Gui, Main:Add, DropDownList, x125 y%yPos% w180 vReferralSource, Dr. Gabe Proulx|Dr. Curtis Wahlen|Dr. Ben Wolfe|Dr. Jae Lee
+    
+    ; Separator line
+    yPos += 30
+    Gui, Main:Add, Text, x20 y%yPos% w%formWidth% h2 +0x10
+    
+    ; Return with yPos ready for next section
+    yPos += 10
+}
+
+; ==============================================================================
+; SetPatientName - Set the patient name display (call this before showing the form)
+; ==============================================================================
+SetPatientName(name)
+{
+    global PatientName
+    PatientName := name
+    GuiControl, Main:, TxtPatientName, Patient: %name%
+}
+
+; ==============================================================================
+; SetOfficeName - Set the office name display (call this before showing the form)
+; ==============================================================================
+SetOfficeName(name)
+{
+    global OfficeName
+    OfficeName := name
+    GuiControl, Main:, TxtOfficeName, %name%
+}
+
+; ==============================================================================
+; PS_GetSpecialistName - Parse SPECIALIST_NAME from main script's header comments
+; ==============================================================================
+PS_GetSpecialistName()
+{
+    ; Determine which file to read
+    if (A_IsCompiled)
+    {
+        ; When compiled, read from corresponding .ahk file in same directory
+        SplitPath, A_ScriptFullPath, , scriptDir, , scriptNameNoExt
+        scriptPath := scriptDir . "\" . scriptNameNoExt . ".ahk"
+        
+        ; Fallback: try parent directory if .ahk not in same dir
+        if (!FileExist(scriptPath))
+            scriptPath := scriptDir . "\..\Forms\" . scriptNameNoExt . ".ahk"
+    }
+    else
+    {
+        ; Dev mode - read from the script itself
+        scriptPath := A_ScriptFullPath
+    }
+    
+    ; Read the script file
+    FileRead, scriptContent, %scriptPath%
+    if (ErrorLevel)
+    {
+        DebugLog("PS_GetSpecialistName: Failed to read " . scriptPath)
+        return ""
+    }
+    
+    ; Look for ; SPECIALIST_NAME: xxx in the first 20 lines
+    lineCount := 0
+    Loop, Parse, scriptContent, `n, `r
+    {
+        lineCount++
+        if (lineCount > 20)
+            break
+        
+        if (RegExMatch(A_LoopField, ";\s*SPECIALIST_NAME:\s*(.+)", match))
+            return Trim(match1)
+    }
+    
+    return ""
+}
+
+; ==============================================================================
 ; PRESET SYSTEM FUNCTIONS
 ; ==============================================================================
 
@@ -637,6 +742,9 @@ PS_LoadPreset(formName, presetName)
         key := SubStr(line, 1, equalPos - 1)
         value := SubStr(line, equalPos + 1)
         
+        ; Decode {NEWLINE} markers back to actual newlines
+        value := StrReplace(value, "{NEWLINE}", "`n")
+        
         data[key] := value
     }
     
@@ -682,15 +790,28 @@ PS_SavePreset(formName, presetName)
 {
     global FT_PresetPath
     
+    sectionName := formName . "_" . presetName
+    
+    ; If saving "Default", delete existing Default section first (override)
+    if (presetName = "Default")
+    {
+        IniDelete, %FT_PresetPath%, %sectionName%
+    }
+    
     ; Get form data (requires form to have GetFormData function)
     formData := GetFormData()
     
-    sectionName := formName . "_" . presetName
-    
     ; Write each key=value to the INI section
+    ; Encode newlines as {NEWLINE} since IniWrite doesn't support multiline values
     for key, value in formData
     {
-        IniWrite, %value%, %FT_PresetPath%, %sectionName%, %key%
+        ; Encode newlines: replace actual newlines with {NEWLINE} marker
+        encodedValue := StrReplace(value, "`r`n", "{NEWLINE}")
+        encodedValue := StrReplace(encodedValue, "`n", "{NEWLINE}")
+        encodedValue := StrReplace(encodedValue, "`r", "{NEWLINE}")
+        
+        ; Write the encoded value (single line)
+        IniWrite, %encodedValue%, %FT_PresetPath%, %sectionName%, %key%
     }
 }
 

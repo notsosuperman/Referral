@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SheetDef xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <IsNew>false</IsNew>
+  <SheetDefNum>21</SheetDefNum>
+  <Description>Referral - PT Associates</Description>
+  <SheetType>ReferralSlip</SheetType>
+  <FontSize>14</FontSize>
+  <FontName>Arial</FontName>
+  <Width>850</Width>
+  <Height>1100</Height>
+  <IsLandscape>false</IsLandscape>
+  <PageCount>2</PageCount>
+  <IsMultiPage>false</IsMultiPage>
+  <BypassGlobalLock>NeverBypass</BypassGlobalLock>
+  <HasMobileLayout>false</HasMobileLayout>
+  <DateTCreated>2024-07-15T15:47:24</DateTCreated>
+  <RevID>15</RevID>
+  <AutoCheckSaveImage>true</AutoCheckSaveImage>
+  <AutoCheckSaveImageDocCategory>0</AutoCheckSaveImageDocCategory>
+  <SheetFieldDefs>
+    <SheetFieldDef>
+      <IsNew>false</IsNew>
+      <SheetFieldDefNum>792</SheetFieldDefNum>
+      <SheetDefNum>21</SheetDefNum>
+      <FieldType>Image</FieldType>
+      <FieldName>Therapeutic Associates PT Referral-images-2.jpg</FieldName>
+      <FieldValue />
+      <FontSize>0</FontSize>
+      <FontName />
+      <FontIsBold>false</FontIsBold>
+      <XPos>0</XPos>
+      <YPos>1040</YPos>
+      <Width>803</Width>
+      <Height>1040</Height>
+      <GrowthBehavior>None</GrowthBehavior>
+      <RadioButtonValue />
+      <RadioButtonGroup />
+      <IsRequired>false</IsRequired>
+      <ImageData />
+      <TabOrder>0</TabOrder>
+      <ReportableName />
+      <TextAlign>Left</TextAlign>
+      <IsPaymentOption>false</IsPaymentOption>
+      <IsLocked>false</IsLocked>
+      <TabOrderMobile>0</TabOrderMobile>
+      <UiLabelMobile />
+      <UiLabelMobileRadioButton />
+      <LayoutMode>Default</LayoutMode>
+      <Language />
+      <CanElectronicallySign>false</CanElectronicallySign>
+      <IsSigProvRestricted>false</IsSigProvRestricted>
+      <ItemColor>-16777216</ItemColor>
+    </SheetFieldDef>
+    <SheetFieldDef>
+      <IsNew>false</IsNew>
+      <SheetFieldDefNum>793</SheetFieldDefNum>
+      <SheetDefNum>21</SheetDefNum>
+      <FieldType>Image</FieldType>
+      <FieldName>Therapeutic Associates PT Referral-images-5.jpg</FieldName>
+      <FieldValue />
+      <FontSize>0</FontSize>
+      <FontName />
+      <FontIsBold>false</FontIsBold>
+      <XPos>0</XPos>
+      <YPos>0</YPos>
+      <Width>803</Width>
+      <Height>1040</Height>
+      <GrowthBehavior>None</GrowthBehavior>
+      <RadioButtonValue />
+      <RadioButtonGroup />
+      <IsRequired>false</IsRequired>
+      <ImageData />
+      <TabOrder>0</TabOrder>
+      <ReportableName />
+      <TextAlign>Left</TextAlign>
+      <IsPaymentOption>false</IsPaymentOption>
+      <IsLocked>false</IsLocked>
+      <TabOrderMobile>0</TabOrderMobile>
+      <UiLabelMobile />
+      <UiLabelMobileRadioButton />
+      <LayoutMode>Default</LayoutMode>
+      <Language />
+      <CanElectronicallySign>false</CanElectronicallySign>
+      <IsSigProvRestricted>false</IsSigProvRestricted>
+      <ItemColor>-16777216</ItemColor>
+    </SheetFieldDef>
+    <SheetFieldDef>
+      <IsNew>false</IsNew>
+      <SheetFieldDefNum>753</SheetFieldDefNum>
+      <SheetDefNum>21</SheetDefNum>
+      <FieldType>InputField</FieldType>
+      <FieldName>notes</FieldName>
+      <FieldValue />
+      <FontSize>12</FontSize>
+      <FontName>Arial</FontName>
+      <FontIsBold>false</FontIsBold>
+      <XPos>57</XPos>
+      <YPos>608</YPos>
+      <Width>417</Width>
+      <Height>109</Height>
+      <GrowthBehavior>None</GrowthBehavior>
+      <RadioButtonValue />
+      <RadioButtonGroup />
+      <IsRequired>false</IsRequired>
+      <ImageData />
+      <TabOrder>1</TabOrder>
+      <ReportableName />
+      <TextAlign>Left</TextAlign>
+      <IsPaymentOption>false</IsPaymentOption>
+      <IsLocked>false</IsLocked>
+      <TabOrderMobile>0</TabOrderMobile>
+      <UiLabelMobile>notes</UiLabelMobile>
+      <UiLabelMobileRadioButton />
+      <LayoutMode>Default</LayoutMode>
+      <Language />
+      <CanElectronicallySign>false</CanElectronicallySign>
+      <IsSigProvRestricted>false</IsSigProvRestricted>
+      <ItemColor>-16777216</ItemColor>
+    </SheetFieldDef>
+    <SheetFieldDef>
+      <IsNew>false</IsNew>
+      <SheetFieldDefNum>754</SheetFieldDefNum>
+      <SheetDefNum>21</SheetDefNum>
+      <FieldType>OutputText</FieldType>
+      <FieldName>patient.HmPhone</FieldName>
+      <FieldValue />
+      <FontSize>13</FontSize>
+      <FontName>Arial</FontName>
+      <FontIsBold>false</FontIsBold>
+      <XPos>174</XPos>
+      <YPos>178</YPos>
+      <Width>142</Width>
+      <Height>25</Height>
+      <GrowthBehavior>None</GrowthBehavior>
+      <RadioButtonValue />
+      <RadioButtonGroup />
+      <IsRequired>false</IsRequired>
+      <ImageData />
+      <TabOrder>0</TabOrder>
+      <ReportableName />
+      <TextAlign>Left</TextAlign>
+      <IsPaymentOption>false</IsPaymentOption>
+      <IsLocked>false</IsLocked>
+      <TabOrderMobile>0</TabOrderMobile>
+      <UiLabelMobile />
+      <UiLabelMobileRadioButton />
+      <LayoutMode>Default</LayoutMode>
+      <Language />
+      <CanElectronicallySign>false</CanElectronicallySign>
+      <IsSigProvRestricted>false</IsSigProvRestricted>
+      <ItemColor>-16777216</ItemColor>
+    </SheetFieldDef>
+    <SheetFieldDef>
+      <IsNew>false</IsNew>
+      <SheetFieldDefNum>755</SheetFieldDefNum>
+      <SheetDefNum>21</SheetDefNum>
+      <FieldType>StaticText</FieldType>
+      <FieldName />
+      <FieldValue>M:</FieldValue>
+      <FontSize>13</FontSize>
+      <FontName>Arial</FontName>
+      <FontIsBold>false</FontIsBold>
+      <XPos>306</XPos>
+      <YPos>178</YPos>
+      <Width>29</Width>
+      <Height>21</Height>
+      <GrowthBehavior>None</GrowthBehavior>
+      <RadioButtonValue />
+      <RadioButtonGroup />
+      <IsRequired>false</IsRequired>
+      <ImageData />
+      <TabOrder>0</TabOrder>
+      <ReportableName />
+      <TextAlign>Left</TextAlign>
+      <IsPaymentOption>false</IsPaymentOption>
+      <IsLocked>true</IsLocked>
+      <TabOrderMobile>0</TabOrderMobile>
+      <UiLabelMobile />
+      <UiLabelMobileRadioButton />
+      <LayoutMode>Default</LayoutMode>
+      <Language />
+      <CanElectronicallySign>false</CanElectronicallySign>
+      <IsSigProvRestricted>false</IsSigProvRestricted>
+      <ItemColor>-16777216</ItemColor>
+    </SheetFieldDef>
+    <SheetFieldDef>
+      <IsNew>false</IsNew>
+      <SheetFieldDefNum>756</SheetFieldDefNum>
+      <SheetDefNum>21</SheetDefNum>
+      <FieldType>OutputText</FieldType>
+      <FieldName>patient.WirelessPhone</FieldName>
+      <FieldValue />
+      <FontSize>13</FontSize>
+      <FontName>Arial</FontName>
+      <FontIsBold>false</FontIsBold>
+      <XPos>324</XPos>
+      <YPos>178</YPos>
+      <Width>142</Width>
+      <Height>24</Height>
+      <GrowthBehavior>None</GrowthBehavior>
+      <RadioButtonValue />
+      <RadioButtonGroup />
+      <IsRequired>false</IsRequired>
+      <ImageData />
+      <TabOrder>0</TabOrder>
+      <ReportableName />
+      <TextAlign>Left</TextAlign>
+      <IsPaymentOption>false</IsPaymentOption>
+      <IsLocked>false</IsLocked>
+      <TabOrderMobile>0</TabOrderMobile>
+      <UiLabelMobile />
+      <UiLabelMobileRadioButton />
+      <LayoutMode>Default</LayoutMode>
+      <Language />
+      <CanElectronicallySign>false</CanElectronicallySign>
+      <IsSigProvRestricted>false</IsSigProvRestricted>
+      <ItemColor>-16777216</ItemColor>
+    </SheetFieldDef>
+    <SheetFieldDef>
+      <IsNew>false</IsNew>
+      <SheetFieldDefNum>757</SheetFieldDefNum>
+      <SheetDefNum>21</SheetDefNum>
+      <FieldType>StaticText</FieldType>
+      <FieldName />
+      <FieldValue>H:</FieldValue>
+      <FontSize>13</FontSize>
+      <FontName>Arial</FontName>
+      <FontIsBold>false</FontIsBold>
+      <XPos>157</XPos>
+      <YPos>178</YPos>
+      <Width>26</Width>
+      <Height>23</Height>
+      <GrowthBehavior>None</GrowthBehavior>
+      <RadioButtonValue />
+      <RadioButtonGroup />
+      <IsRequired>false</IsRequired>
+      <ImageData />
+      <TabOrder>0</TabOrder>
+      <ReportableName />
+      <TextAlign>Left</TextAlign>
+      <IsPaymentOption>false</IsPaymentOption>
+      <IsLocked>true</IsLocked>
+      <TabOrderMobile>0</TabOrderMobile>
+      <UiLabelMobile />
+      <UiLabelMobileRadioButton />
+      <LayoutMode>Default</LayoutMode>
+      <Language />
+      <CanElectronicallySign>false</CanElectronicallySign>
+      <IsSigProvRestricted>false</IsSigProvRestricted>
+      <ItemColor>-16777216</ItemColor>
+    </SheetFieldDef>
+    <SheetFieldDef>
+      <IsNew>false</IsNew>
+      <SheetFieldDefNum>758</SheetFieldDefNum>
+      <SheetDefNum>21</SheetDefNum>
+      <FieldType>ComboBox</FieldType>
+      <FieldName />
+      <FieldValue>;Dr. Gabe Proulx|Dr. Curtis Wahlen|Dr. Ben Wolfe|Dr. Jae Lee</FieldValue>
+      <FontSize>0</FontSize>
+      <FontName />
+      <FontIsBold>false</FontIsBold>
+      <XPos>418</XPos>
+      <YPos>910</YPos>
+      <Width>277</Width>
+      <Height>21</Height>
+      <GrowthBehavior>None</GrowthBehavior>
+      <RadioButtonValue />
+      <RadioButtonGroup />
+      <IsRequired>false</IsRequired>
+      <ImageData />
+      <TabOrder>1</TabOrder>
+      <ReportableName />
+      <TextAlign>Left</TextAlign>
+      <IsPaymentOption>false</IsPaymentOption>
+      <IsLocked>false</IsLocked>
+      <TabOrderMobile>0</TabOrderMobile>
+      <UiLabelMobile />
+      <UiLabelMobileRadioButton />
+      <LayoutMode>Default</LayoutMode>
+      <Language />
+      <CanElectronicallySign>false</CanElectronicallySign>
+      <IsSigProvRestricted>false</IsSigProvRestricted>
+      <ItemColor>-16777216</ItemColor>
+    </SheetFieldDef>
+    <SheetFieldDef>
+      <IsNew>false</IsNew>
+      <SheetFieldDefNum>759</SheetFieldDefNum>
+      <SheetDefNum>21</SheetDefNum>
+      <FieldType>StaticText</FieldType>
+      <FieldName />
+      <FieldValue>[nameL], [nameF] [nameMI]</FieldValue>
+      <FontSize>13</FontSize>
+      <FontName>Arial</FontName>
+      <FontIsBold>false</FontIsBold>
+      <XPos>158</XPos>
+      <YPos>149</YPos>
+      <Width>240</Width>
+      <Height>23</Height>
+      <GrowthBehavior>None</GrowthBehavior>
+      <RadioButtonValue />
+      <RadioButtonGroup />
+      <IsRequired>false</IsRequired>
+      <ImageData />
+      <TabOrder>0</TabOrder>
+      <ReportableName />
+      <TextAlign>Left</TextAlign>
+      <IsPaymentOption>false</IsPaymentOption>
+      <IsLocked>false</IsLocked>
+      <TabOrderMobile>0</TabOrderMobile>
+      <UiLabelMobile />
+      <UiLabelMobileRadioButton />
+      <LayoutMode>Default</LayoutMode>
+      <Language />
+      <CanElectronicallySign>false</CanElectronicallySign>
+      <IsSigProvRestricted>false</IsSigProvRestricted>
+      <ItemColor>-16777216</ItemColor>
+    </SheetFieldDef>
+    <SheetFieldDef>
+      <IsNew>false</IsNew>
+      <SheetFieldDefNum>760</SheetFieldDefNum>
+      <SheetDefNum>21</SheetDefNum>
+      <FieldType>StaticText</FieldType>
+      <FieldName />
+      <FieldValue>[dateToday]</FieldValue>
+      <FontSize>14</FontSize>
+      <FontName>Arial</FontName>
+      <FontIsBold>false</FontIsBold>
+      <XPos>531</XPos>
+      <YPos>942</YPos>
+      <Width>152</Width>
+      <Height>30</Height>
+      <GrowthBehavior>None</GrowthBehavior>
+      <RadioButtonValue />
+      <RadioButtonGroup />
+      <IsRequired>false</IsRequired>
+      <ImageData />
+      <TabOrder>0</TabOrder>
+      <ReportableName />
+      <TextAlign>Left</TextAlign>
+      <IsPaymentOption>false</IsPaymentOption>
+      <IsLocked>false</IsLocked>
+      <TabOrderMobile>0</TabOrderMobile>
+      <UiLabelMobile />
+      <UiLabelMobileRadioButton />
+      <LayoutMode>Default</LayoutMode>
+      <Language />
+      <CanElectronicallySign>false</CanElectronicallySign>
+      <IsSigProvRestricted>false</IsSigProvRestricted>
+      <ItemColor>-16777216</ItemColor>
+    </SheetFieldDef>
+    <SheetFieldDef>
+      <IsNew>false</IsNew>
+      <SheetFieldDefNum>764</SheetFieldDefNum>
+      <SheetDefNum>21</SheetDefNum>
+      <FieldType>StaticText</FieldType>
+      <FieldName />
+      <FieldValue>[Birthdate]</FieldValue>
+      <FontSize>13</FontSize>
+      <FontName>Arial</FontName>
+      <FontIsBold>false</FontIsBold>
+      <XPos>535</XPos>
+      <YPos>177</YPos>
+      <Width>131</Width>
+      <Height>22</Height>
+      <GrowthBehavior>None</GrowthBehavior>
+      <RadioButtonValue />
+      <RadioButtonGroup />
+      <IsRequired>false</IsRequired>
+      <ImageData />
+      <TabOrder>0</TabOrder>
+      <ReportableName />
+      <TextAlign>Left</TextAlign>
+      <IsPaymentOption>false</IsPaymentOption>
+      <IsLocked>false</IsLocked>
+      <TabOrderMobile>0</TabOrderMobile>
+      <UiLabelMobile />
+      <UiLabelMobileRadioButton />
+      <LayoutMode>Default</LayoutMode>
+      <Language />
+      <CanElectronicallySign>false</CanElectronicallySign>
+      <IsSigProvRestricted>false</IsSigProvRestricted>
+      <ItemColor>-16777216</ItemColor>
+    </SheetFieldDef>
+    <SheetFieldDef>
+      <IsNew>false</IsNew>
+      <SheetFieldDefNum>794</SheetFieldDefNum>
+      <SheetDefNum>21</SheetDefNum>
+      <FieldType>StaticText</FieldType>
+      <FieldName />
+      <FieldValue>Wolfe Dental Hillsboro - </FieldValue>
+      <FontSize>14</FontSize>
+      <FontName>Arial</FontName>
+      <FontIsBold>false</FontIsBold>
+      <XPos>208</XPos>
+      <YPos>911</YPos>
+      <Width>217</Width>
+      <Height>21</Height>
+      <GrowthBehavior>None</GrowthBehavior>
+      <RadioButtonValue />
+      <RadioButtonGroup />
+      <IsRequired>false</IsRequired>
+      <ImageData />
+      <TabOrder>0</TabOrder>
+      <ReportableName />
+      <TextAlign>Left</TextAlign>
+      <IsPaymentOption>false</IsPaymentOption>
+      <IsLocked>true</IsLocked>
+      <TabOrderMobile>0</TabOrderMobile>
+      <UiLabelMobile />
+      <UiLabelMobileRadioButton />
+      <LayoutMode>Default</LayoutMode>
+      <Language />
+      <CanElectronicallySign>false</CanElectronicallySign>
+      <IsSigProvRestricted>false</IsSigProvRestricted>
+      <ItemColor>-16777216</ItemColor>
+    </SheetFieldDef>
+    <SheetFieldDef>
+      <IsNew>false</IsNew>
+      <SheetFieldDefNum>795</SheetFieldDefNum>
+      <SheetDefNum>21</SheetDefNum>
+      <FieldType>StaticText</FieldType>
+      <FieldName />
+      <FieldValue>(503) 844-6550</FieldValue>
+      <FontSize>14</FontSize>
+      <FontName>Arial</FontName>
+      <FontIsBold>false</FontIsBold>
+      <XPos>215</XPos>
+      <YPos>943</YPos>
+      <Width>217</Width>
+      <Height>21</Height>
+      <GrowthBehavior>None</GrowthBehavior>
+      <RadioButtonValue />
+      <RadioButtonGroup />
+      <IsRequired>false</IsRequired>
+      <ImageData />
+      <TabOrder>0</TabOrder>
+      <ReportableName />
+      <TextAlign>Left</TextAlign>
+      <IsPaymentOption>false</IsPaymentOption>
+      <IsLocked>true</IsLocked>
+      <TabOrderMobile>0</TabOrderMobile>
+      <UiLabelMobile />
+      <UiLabelMobileRadioButton />
+      <LayoutMode>Default</LayoutMode>
+      <Language />
+      <CanElectronicallySign>false</CanElectronicallySign>
+      <IsSigProvRestricted>false</IsSigProvRestricted>
+      <ItemColor>-16777216</ItemColor>
+    </SheetFieldDef>
+  </SheetFieldDefs>
+</SheetDef>

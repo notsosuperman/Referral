@@ -70,16 +70,18 @@ if ($LASTEXITCODE -eq 0) {
 # Compile Forms
 Write-Step "Compiling Forms..."
 
-$forms = @("Farham", "HillsboroOMFS", "NorthwestPerio")
-foreach ($form in $forms) {
-    $inFile = "Forms\$form.ahk"
-    $outFile = "$BUILD_DIR\Forms\$form.exe"
+# Get all .ahk files from Forms directory
+$formFiles = Get-ChildItem -Path "Forms\*.ahk" -File
+foreach ($formFile in $formFiles) {
+    $formName = $formFile.BaseName
+    $inFile = $formFile.FullName
+    $outFile = "$BUILD_DIR\Forms\$formName.exe"
     
     & $AHK_COMPILER /in $inFile /out $outFile | Out-Null
     if ($LASTEXITCODE -eq 0) {
-        Write-Success "$form.exe"
+        Write-Success "$formName.exe"
     } else {
-        Write-Error "Failed to compile $form.ahk"
+        Write-Error "Failed to compile $formName.ahk"
         exit 1
     }
 }

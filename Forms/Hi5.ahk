@@ -1,8 +1,9 @@
 ; ==============================================================================
-; Farham Referral Slip - AHK v1
+; Hi 5 Dental Referral Slip - AHK v1
 ; Based on Open Dental Sheet XML Export
-; SPECIALIST_NAME: Endo - Wolfe Dental Cedar Mill
-; FORM_NAME: Farham
+; SPECIALIST_NAME: Pedo - Hi 5 Dental
+; FORM_NAME: Hi5
+; WINDOW_TITLE: Referral - Pedo - Hi 5 Dental
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force
@@ -15,26 +16,19 @@ SetWorkingDir %A_ScriptDir%
 ; Global Variables for Form Data
 ; ==============================================================================
 ; Display only (set externally, not editable)
-global OfficeName := "Wolfe Dental"
+global OfficeName := "Hi 5 Dental"
 global PatientName := ""  ; Will be set when form is launched
 
 ; GUI Control variables (required for GuiControl updates)
 global TxtOfficeName := ""
 global TxtPatientName := ""
 
-; User-editable fields
+; User-editable fields (ReferralSource in header)
 global ReferralSource := ""
 
-; Notes field
-global txtNotes := ""
-
-; CBCT question
-global chkCBCTYes := 0
-global chkCBCTNo := 0
-
-; PA question
-global chkPAYes := 0
-global chkPANo := 0
+; Notes fields
+global txtPleaseEvaluateAndTreat := ""  ; Multiline
+global txtRadiographsTaken := ""  ; Single line
 
 ; ==============================================================================
 ; Build the GUI
@@ -56,55 +50,48 @@ BuildReferralForm()
     
     ; Build standard header (modifies yPos by reference)
     yPos := 20
-    formWidth := 400
+    formWidth := 500
     FT_BuildHeader(yPos, formWidth)
     
     ; ===========================================================================
-    ; For Treatment Including (Notes)
+    ; Please Evaluate & Treat
     ; ===========================================================================
     Gui, Main:Font, s10 Bold Italic Underline, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w200, For Treatment Including
+    Gui, Main:Add, Text, x20 y%yPos% w200, Please Evaluate and Treat:
     
     Gui, Main:Font, s10 Normal, Arial
     yPos += 24
-    Gui, Main:Add, Edit, x20 y%yPos% w400 h80 Multi vtxtNotes, %txtNotes%
+    Gui, Main:Add, Edit, x20 y%yPos% w500 h100 Multi vtxtPleaseEvaluateAndTreat, %txtPleaseEvaluateAndTreat%
     
     ; ===========================================================================
-    ; CBCT Question
+    ; Radiographs Taken
     ; ===========================================================================
-    yPos += 95
-    Gui, Main:Add, Text, x20 y%yPos% w400 h2 +0x10
+    yPos += 115
+    Gui, Main:Font, s10 Bold Italic Underline, Arial
+    Gui, Main:Add, Text, x20 y%yPos% w200, Radiographs taken:
     
-    yPos += 10
     Gui, Main:Font, s10 Normal, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w150 h22 +0x200, Was a CBCT taken?
-    Gui, Main:Add, CheckBox, x180 y%yPos% w50 vchkCBCTYes, Y
-    Gui, Main:Add, CheckBox, x240 y%yPos% w50 vchkCBCTNo, N
-    
-    ; ===========================================================================
-    ; PA Question
-    ; ===========================================================================
-    yPos += 28
-    Gui, Main:Add, Text, x20 y%yPos% w150 h22 +0x200, Was PA taken?
-    Gui, Main:Add, CheckBox, x180 y%yPos% w50 vchkPAYes, Y
-    Gui, Main:Add, CheckBox, x240 y%yPos% w50 vchkPANo, N
+    yPos += 24
+    Gui, Main:Add, Edit, x20 y%yPos% w500 h22 vtxtRadiographsTaken, %txtRadiographsTaken%
     
     ; ===========================================================================
     ; Action Buttons
     ; ===========================================================================
-    yPos += 40
-    Gui, Main:Add, Text, x20 y%yPos% w400 h2 +0x10
+    yPos += 35
+    Gui, Main:Add, Text, x20 y%yPos% w500 h2 +0x10
     
     yPos += 10
     Gui, Main:Font, s10 Bold, Arial
     Gui, Main:Add, Button, x20 y%yPos% w100 h35 gBtnClearForm, Clear Form
-    Gui, Main:Add, Button, x300 y%yPos% w120 h35 gBtnSubmit Default, Submit Referral
+    Gui, Main:Add, Button, x400 y%yPos% w120 h35 gBtnSubmit Default, Submit Referral
     
-    ; Calculate window height (buttons are at yPos with height 35, so bottom is yPos + 35)
-    ; Add minimal padding (15 pixels) below buttons
-    winHeight := yPos + 50
-    ; Show the GUI
-    Gui, Main:Show, w440 h%winHeight%
+    ; Calculate window dimensions
+    winWidth := 540
+    winHeight := yPos + 50  ; Buttons are at yPos with height 35, so bottom is yPos + 35, plus 15px padding
+    
+    ; Set MinSize to match display size (can't change after Gui, New, so using small default)
+    ; The actual size is set by Gui, Show below
+    Gui, Main:Show, w%winWidth% h%winHeight%
 }
 
 ; ==============================================================================

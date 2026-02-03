@@ -53,6 +53,25 @@
             ],
             "problemMatcher": [],
             "group": "none"
+        },
+        {
+            "label": "Deploy to Server (Build + Copy)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/Deploy.ps1"
+            ],
+            "problemMatcher": [],
+            "group": "none",
+            "dependsOn": "Build All (Compile to EXE)",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
         }
     ]
 }

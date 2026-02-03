@@ -192,17 +192,17 @@ ParseFormHeader(filePath)
             formData.name := Trim(match1)
         }
         
-        ; Extract DISPLAY_NAME
-        if (RegExMatch(line, "i)^\s*;\s*DISPLAY_NAME:\s*(.+)", match))
+        ; Extract SPECIALIST_NAME (used for button text)
+        if (RegExMatch(line, "i)^\s*;\s*SPECIALIST_NAME:\s*(.+)", match))
         {
             formData.display := Trim(match1)
         }
     }
     
-    ; DISPLAY_NAME is required
+    ; SPECIALIST_NAME is required
     if (formData.display = "")
     {
-        ; Error: DISPLAY_NAME is required
+        ; Error: SPECIALIST_NAME is required
         formData.name := ""
         return formData
     }

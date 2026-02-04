@@ -311,22 +311,20 @@ UpdateWindowPosition()
 ; Close Fill Sheet and Referrals for Patient windows after mapping
 CloseReferralWindows()
 {
+    ; Use WinClose instead of Send {Escape} to avoid triggering our own hotkey
+    
     ; Close Fill Sheet window
     if WinExist("Fill Sheet")
     {
-        WinActivate, Fill Sheet
-        Sleep, 100
-        Send, {Escape}
-        Sleep, 300
+        WinClose, Fill Sheet
+        WinWaitClose, Fill Sheet,, 2
     }
     
     ; Close Referrals for Patient window
     if WinExist("Referrals for Patient")
     {
-        WinActivate, Referrals for Patient
-        Sleep, 100
-        Send, {Escape}
-        Sleep, 300
+        WinClose, Referrals for Patient
+        WinWaitClose, Referrals for Patient,, 2
     }
 }
 

@@ -146,6 +146,10 @@ Escape::
     if (ClickHotkeyRegistered)
         Hotkey, ~LButton, Off
     ToolTip
+    
+    ; Close referral windows so next mapping can start fresh
+    CloseReferralWindows()
+    
     MsgBox, 48, CoordHelper, Capture aborted. No changes saved.
     ExitApp
 return
@@ -182,6 +186,10 @@ return
         
         ; Save to INI
         SaveMappings()
+        
+        ; Close Fill Sheet and Referrals for Patient windows
+        ; so next mapping can start fresh
+        CloseReferralWindows()
         
         MsgBox, 64, CoordHelper, Coordinate capture complete!`n`nMappings saved to:`n%ConfigPath%
         ExitApp
@@ -298,6 +306,28 @@ UpdateWindowPosition()
 {
     global TargetWindow, WinX, WinY, WinW, WinH
     WinGetPos, WinX, WinY, WinW, WinH, %TargetWindow%
+}
+
+; Close Fill Sheet and Referrals for Patient windows after mapping
+CloseReferralWindows()
+{
+    ; Close Fill Sheet window
+    if WinExist("Fill Sheet")
+    {
+        WinActivate, Fill Sheet
+        Sleep, 100
+        Send, {Escape}
+        Sleep, 300
+    }
+    
+    ; Close Referrals for Patient window
+    if WinExist("Referrals for Patient")
+    {
+        WinActivate, Referrals for Patient
+        Sleep, 100
+        Send, {Escape}
+        Sleep, 300
+    }
 }
 
 ShowCurrentPrompt()

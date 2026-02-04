@@ -83,7 +83,7 @@ BuildReferralForm()
     Gui, Main:Font, s10 Bold Italic Underline, Arial
     Gui, Main:Add, Text, x20 y%yPos% w250, Teeth # or area to be treated:
     
-    Gui, Main:Font, s11, Arial
+    Gui, Main:Font, s11 Normal, Arial
     yPos += 22
     Gui, Main:Add, Edit, x20 y%yPos% w560 h22 vTeethAreaToTreat, %TeethAreaToTreat%
     

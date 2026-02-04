@@ -85,8 +85,16 @@ else
         WinActivate, Open Dental {
         Sleep, 300
         
+        ; Block input during navigation (like FormTransfer does)
+        BlockInputOn()
+        
         ; Navigate to Fill Sheet using ODAutomation
-        if NavigateToFillSheet(SpecialistName)
+        navSuccess := NavigateToFillSheet(SpecialistName)
+        
+        ; Unblock input
+        BlockInputOff()
+        
+        if (navSuccess)
         {
             ; Success! Fill Sheet should now be open
             Sleep, 300

@@ -642,7 +642,7 @@ BuildNormalGUI(forms)
     for index, form in forms
     {
         ; Main form button
-        Gui, Launcher:Font, s11 Normal, Arial
+        Gui, Launcher:Font, s11 Bold, Arial
         buttonText := form.display
         Gui, Launcher:Add, Button, x20 y%yPos% w260 h40 gHandleButtonClick, %buttonText%
         

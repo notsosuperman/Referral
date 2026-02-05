@@ -280,7 +280,8 @@ FT_FillForm(mappings, formData)
                 Sleep, %FT_ActionDelay%
                 Send, ^a
                 Sleep, %FT_ActionDelay%
-                SendRaw, %value%
+                ; Use clipboard paste for instant text entry (handles special chars)
+                PasteText(value)
                 Sleep, %FT_ActionDelay%
                 Checkpoint("Filled: " . mapping.var . " = " . SubStr(value, 1, 30), false)
             }

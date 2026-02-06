@@ -17,7 +17,7 @@ BtnSubmit:
     ; Get form data (auto-generated from Mappings.ini)
     formData := GetFormData()
     
-    ; Hide form during transfer
+    ; Hide form during transfer (keeps screen clean)
     Gui, Main:Hide
     
     ; Get form name for FormTransfer
@@ -26,11 +26,17 @@ BtnSubmit:
     if (PS_FormName = "")
         PS_FormName := PS_GetFormName()
     
-    ; Transfer to Open Dental
-    FormTransfer(PS_FormName, formData)
-    
-    ; Close form (no message)
-    ExitApp
+    ; Transfer to Open Dental - only close on success
+    if FormTransfer(PS_FormName, formData)
+    {
+        ; Success - close form
+        ExitApp
+    }
+    else
+    {
+        ; Failed - re-show form so user can fix issue and try again
+        Gui, Main:Show
+    }
 return
 
 ; ==============================================================================

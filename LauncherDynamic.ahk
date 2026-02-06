@@ -273,8 +273,8 @@ MergeAndSortForms(forms, presetMap)
     {
         if (presetMap.HasKey(form.name))
         {
-            ; Sort presets alphabetically
-            form.presets := SortArray(presetMap[form.name])
+            ; Preserve preset order from INI file (no sorting)
+            form.presets := presetMap[form.name]
         }
         else
         {
@@ -421,7 +421,7 @@ DiscoverAllPresets(formName)
         }
     }
     
-    return SortArray(presets)
+    return presets  ; Preserve order from INI file
 }
 
 ; Get specialist name from form's SPECIALIST_NAME header

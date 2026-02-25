@@ -501,6 +501,7 @@ ClearForm()
 ; ==============================================================================
 FT_BuildHeader(ByRef yPos, formWidth)
 {
+    Gui, Main:+AlwaysOnTop
     global OfficeName
     global PatientName
     global ReferralSource

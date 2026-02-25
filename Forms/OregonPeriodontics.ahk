@@ -104,7 +104,7 @@ BuildReferralForm()
     ; Other
     ; ===========================================================================
     yPos += 35
-    Gui, Main:Add, CheckBox, x20 y%yPos% w100 vchkOther, Other
+    Gui, Main:Add, CheckBox, x20 y%yPos% w50 vchkOther, Other
     Gui, Main:Add, Edit, x80 y%yPos% w480 h22 vtxtOther, %txtOther%
     
     ; ===========================================================================

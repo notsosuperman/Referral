@@ -3,6 +3,7 @@
 ; Based on Open Dental Sheet XML Export
 ; SPECIALIST_NAME: Perio - Northwest Periodontics
 ; FORM_NAME: NorthwestPerio
+; WINDOW_TITLE: Referral - Perio - Northwest Periodontics
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force

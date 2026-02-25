@@ -1,9 +1,9 @@
 ; ==============================================================================
-; Farham Referral Slip - AHK v1
+; Yang Referral Slip - AHK v1
 ; Based on Open Dental Sheet XML Export
-; SPECIALIST_NAME: Endo - Wolfe Dental Cedar Mill
-; FORM_NAME: Farham
-; WINDOW_TITLE: Referral - Endo - Wolfe Dental Cedar Mill
+; SPECIALIST_NAME: Perio - Wolfe Dental Cedar Mill
+; FORM_NAME: Yang
+; WINDOW_TITLE: Referral - Perio - Wolfe Dental Cedar Mill
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force
@@ -23,19 +23,30 @@ global PatientName := ""  ; Will be set when form is launched
 global TxtOfficeName := ""
 global TxtPatientName := ""
 
-; User-editable fields
+; User-editable fields (ReferralSource in header)
 global ReferralSource := ""
 
-; Notes field
-global txtNotes := ""
+; Symptoms
+global chkPainSwelling := 0
+global chkAsymptomatic := 0
 
-; CBCT question
-global chkCBCTYes := 0
-global chkCBCTNo := 0
+; Treatment checkboxes (left column)
+global chkPeriodontalEvaluation := 0
+global chkPeriodontalTreatment := 0
+global chkExtraction := 0
+global chkBoneGraft := 0
 
-; PA question
-global chkPAYes := 0
-global chkPANo := 0
+; Treatment checkboxes (right column)
+global chkPeriodontalRetreatment := 0
+global chkPeriodontalSurgery := 0
+global chkImplant := 0
+
+; Other
+global chkOther := 0
+global txtOther := ""
+
+; History / Comments / Special instructions
+global txtHistoryComments := ""
 
 ; ==============================================================================
 ; Build the GUI
@@ -49,63 +60,88 @@ BuildReferralForm()
     ; Get specialist name for window title
     specialistName := PS_GetSpecialistName()
     windowTitle := "Referral - " . specialistName
-    
+
     ; Set GUI defaults (non-resizable, size calculated at end)
     Gui, Main:New, , %windowTitle%
     Gui, Main:Color, FFFFFF
     Gui, Main:Font, s11, Arial
-    
+
     ; Build standard header (modifies yPos by reference)
     yPos := 20
-    formWidth := 400
+    formWidth := 540
     FT_BuildHeader(yPos, formWidth)
-    
+
     ; ===========================================================================
-    ; For Treatment Including (Notes)
+    ; Symptoms
     ; ===========================================================================
+    Gui, Main:Font, s10 Normal, Arial
+    Gui, Main:Add, CheckBox, x20 y%yPos% w140 vchkPainSwelling, Pain/Swelling
+    Gui, Main:Add, CheckBox, x170 y%yPos% w140 vchkAsymptomatic, Asymptomatic
+
+    ; ===========================================================================
+    ; Treatment Options (two columns)
+    ; ===========================================================================
+    yPos += 35
+    Gui, Main:Add, Text, x20 y%yPos% w540 h2 +0x10
+
+    yPos += 8
     Gui, Main:Font, s10 Bold Italic Underline, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w200, For Treatment Including
-    
+    Gui, Main:Add, Text, x20 y%yPos% w200, Treatment Options
+
     Gui, Main:Font, s10 Normal, Arial
     yPos += 24
-    Gui, Main:Add, Edit, x20 y%yPos% w400 h80 Multi vtxtNotes, %txtNotes%
-    
+    colRight := 290
+
+    Gui, Main:Add, CheckBox, x20 y%yPos% w250 vchkPeriodontalEvaluation, Periodontal Evaluation
+    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w250 vchkPeriodontalRetreatment, Periodontal Re-treatment
+
+    yPos += 24
+    Gui, Main:Add, CheckBox, x20 y%yPos% w250 vchkPeriodontalTreatment, Periodontal Treatment
+    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w250 vchkPeriodontalSurgery, Periodontal Surgery
+
+    yPos += 24
+    Gui, Main:Add, CheckBox, x20 y%yPos% w250 vchkExtraction, Extraction
+    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w250 vchkImplant, Implant
+
+    yPos += 24
+    Gui, Main:Add, CheckBox, x20 y%yPos% w250 vchkBoneGraft, Bone Graft
+
     ; ===========================================================================
-    ; CBCT Question
-    ; ===========================================================================
-    yPos += 95
-    Gui, Main:Add, Text, x20 y%yPos% w400 h2 +0x10
-    
-    yPos += 10
-    Gui, Main:Font, s10 Normal, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w150 h22 +0x200, Was a CBCT taken?
-    Gui, Main:Add, CheckBox, x180 y%yPos% w50 vchkCBCTYes, Y
-    Gui, Main:Add, CheckBox, x240 y%yPos% w50 vchkCBCTNo, N
-    
-    ; ===========================================================================
-    ; PA Question
+    ; Other
     ; ===========================================================================
     yPos += 28
-    Gui, Main:Add, Text, x20 y%yPos% w150 h22 +0x200, Was PA taken?
-    Gui, Main:Add, CheckBox, x180 y%yPos% w50 vchkPAYes, Y
-    Gui, Main:Add, CheckBox, x240 y%yPos% w50 vchkPANo, N
-    
+    Gui, Main:Add, CheckBox, x20 y%yPos% w60 vchkOther, Other:
+    Gui, Main:Add, Edit, x82 y%yPos% w478 h22 vtxtOther, %txtOther%
+
+    ; ===========================================================================
+    ; History / Comments / Special instructions
+    ; ===========================================================================
+    yPos += 35
+    Gui, Main:Add, Text, x20 y%yPos% w540 h2 +0x10
+
+    yPos += 8
+    Gui, Main:Font, s10 Bold Italic Underline, Arial
+    Gui, Main:Add, Text, x20 y%yPos% w400, History / Comments / Special instructions:
+
+    Gui, Main:Font, s10 Normal, Arial
+    yPos += 24
+    Gui, Main:Add, Edit, x20 y%yPos% w540 h100 Multi vtxtHistoryComments, %txtHistoryComments%
+
     ; ===========================================================================
     ; Action Buttons
     ; ===========================================================================
-    yPos += 40
-    Gui, Main:Add, Text, x20 y%yPos% w400 h2 +0x10
-    
+    yPos += 115
+    Gui, Main:Add, Text, x20 y%yPos% w540 h2 +0x10
+
     yPos += 10
     Gui, Main:Font, s10 Bold, Arial
     Gui, Main:Add, Button, x20 y%yPos% w100 h35 gBtnClearForm, Clear Form
-    Gui, Main:Add, Button, x300 y%yPos% w120 h35 gBtnSubmit Default, Submit Referral
-    
+    Gui, Main:Add, Button, x440 y%yPos% w120 h35 gBtnSubmit Default, Submit Referral
+
     ; Calculate window height (buttons are at yPos with height 35, so bottom is yPos + 35)
     ; Add minimal padding (15 pixels) below buttons
     winHeight := yPos + 50
-    ; Show the GUI
-    Gui, Main:Show, w440 h%winHeight%
+    Gui, Main:Show, w580 h%winHeight%
 }
 
 ; ==============================================================================

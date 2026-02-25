@@ -13,9 +13,8 @@ This document contains everything needed to create new AHK v1 referral forms for
 4. [GUI Building Pattern](#gui-building-pattern)
 5. [Control Types & Naming](#control-types--naming)
 6. [Event Handlers](#event-handlers)
-7. [Utility Functions](#utility-functions)
-8. [Complete Example Forms](#complete-example-forms)
-9. [Post-Creation Steps](#post-creation-steps)
+7. [Complete Example Forms](#complete-example-forms)
+8. [Post-Creation Steps](#post-creation-steps)
 
 ---
 
@@ -34,6 +33,7 @@ Forms/
   YourNewForm.ahk          ← Your form script
 Lib/
   FormTransfer.ahk         ← Automation library (don't edit)
+  FormHandlers.ahk         ← Standard button handlers (don't edit)
   ODAutomation.ahk         ← OD navigation (don't edit)
   Logging.ahk              ← Logging (don't edit)
 Config/
@@ -53,6 +53,7 @@ Config/
 ; Based on Open Dental Sheet XML Export
 ; SPECIALIST_NAME: [Category] - [Full Practice Name]
 ; FORM_NAME: [CamelCaseFormName]
+; WINDOW_TITLE: Referral - [Category] - [Full Practice Name]
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force
@@ -76,6 +77,13 @@ SetWorkingDir %A_ScriptDir%
 - Internal identifier, CamelCase, no spaces
 - Used for Mappings.ini section names and Presets.ini
 - Example: `HillsboroOMFS`, `NorthwestPerio`, `Farham`
+
+**WINDOW_TITLE:**
+- The exact window title the form will display
+- Format: `Referral - [SPECIALIST_NAME]`
+- Example: `Referral - Perio - Oregon Periodontics`
+- Used by `ScreenshotHelper.ahk` to detect and capture the form window
+- Always matches the title set programmatically by `BuildReferralForm()`
 
 ---
 
@@ -141,11 +149,13 @@ BuildReferralForm()
     specialistName := PS_GetSpecialistName()
     windowTitle := "Referral - " . specialistName
     
-    ; GUI Setup
+    ; Set GUI defaults (non-resizable, size calculated at end)
     Gui, Main:New, , %windowTitle%
     Gui, Main:Color, FFFFFF
+    Gui, Main:Font, s11, Arial
     
     ; Build standard header (modifies yPos by reference)
+    ; Note: FT_BuildHeader() also sets +AlwaysOnTop on the window
     yPos := 20
     formWidth := 580  ; Adjust per form (400, 500, 580 are common)
     FT_BuildHeader(yPos, formWidth)
@@ -291,7 +301,7 @@ This provides:
 
 ## Complete Example Forms
 
-### Example 1: Farham (Simple Form - 112 lines, ~37% smaller!)
+### Example 1: Farham (Simple Form)
 
 ```ahk
 ; ==============================================================================
@@ -345,8 +355,8 @@ BuildReferralForm()
     specialistName := PS_GetSpecialistName()
     windowTitle := "Referral - " . specialistName
     
-    ; Set GUI defaults
-    Gui, Main:New, +Resize +MinSize400x300, %windowTitle%
+    ; Set GUI defaults (non-resizable, size calculated at end)
+    Gui, Main:New, , %windowTitle%
     Gui, Main:Color, FFFFFF
     Gui, Main:Font, s11, Arial
     
@@ -396,8 +406,10 @@ BuildReferralForm()
     Gui, Main:Add, Button, x20 y%yPos% w100 h35 gBtnClearForm, Clear Form
     Gui, Main:Add, Button, x300 y%yPos% w120 h35 gBtnSubmit Default, Submit Referral
     
-    ; Show the GUI
+    ; Calculate window height (buttons are at yPos with height 35, so bottom is yPos + 35)
+    ; Add minimal padding (15 pixels) below buttons
     winHeight := yPos + 50
+    ; Show the GUI
     Gui, Main:Show, w440 h%winHeight%
 }
 
@@ -407,7 +419,7 @@ BuildReferralForm()
 #Include %A_ScriptDir%\..\Lib\FormHandlers.ahk
 ```
 
-### Example 2: Northwest Perio (Medium Complexity - 138 lines, ~45% smaller!)
+### Example 2: Northwest Perio (Medium Complexity)
 
 ```ahk
 ; ==============================================================================
@@ -443,12 +455,6 @@ global chkPeriodontalTreatment := 0
 global chkRecessionTreatment := 0
 global chkCrownLengthening := 0
 
-; Radiographs
-global chkRadiographsYes := 0
-global chkRadiographsNo := 0
-global chkWillSend := 0
-global chkPatientWillBring := 0
-
 ; Remarks
 global txtRemarks := ""
 
@@ -465,8 +471,8 @@ BuildReferralForm()
     specialistName := PS_GetSpecialistName()
     windowTitle := "Referral - " . specialistName
     
-    ; Set GUI defaults
-    Gui, Main:New, +Resize +MinSize400x400, %windowTitle%
+    ; Set GUI defaults (non-resizable, size calculated at end)
+    Gui, Main:New, , %windowTitle%
     Gui, Main:Color, FFFFFF
     Gui, Main:Font, s11, Arial
     
@@ -485,32 +491,12 @@ BuildReferralForm()
     
     Gui, Main:Font, s10 Normal, Arial
     yPos += 24
-    
     Gui, Main:Add, CheckBox, x20 y%yPos% w200 vchkImplantTreatment, Implant Treatment
     Gui, Main:Add, CheckBox, x%colRight% y%yPos% w200 vchkPeriodontalTreatment, Periodontal Treatment
     
     yPos += 24
     Gui, Main:Add, CheckBox, x20 y%yPos% w200 vchkRecessionTreatment, Recession Treatment
     Gui, Main:Add, CheckBox, x%colRight% y%yPos% w200 vchkCrownLengthening, Crown Lengthening
-    
-    ; ===========================================================================
-    ; Radiographs
-    ; ===========================================================================
-    yPos += 35
-    Gui, Main:Add, Text, x20 y%yPos% w500 h2 +0x10
-    
-    yPos += 10
-    Gui, Main:Font, s10 Bold Italic Underline, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w150, Radiographs
-    
-    Gui, Main:Font, s10 Normal, Arial
-    yPos += 24
-    Gui, Main:Add, CheckBox, x20 y%yPos% w80 vchkRadiographsYes, Yes
-    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w80 vchkRadiographsNo, No
-    
-    yPos += 24
-    Gui, Main:Add, CheckBox, x20 y%yPos% w120 vchkWillSend, Will Send
-    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w150 vchkPatientWillBring, Patient Will Bring
     
     ; ===========================================================================
     ; Remarks
@@ -522,8 +508,8 @@ BuildReferralForm()
     Gui, Main:Font, s10 Bold Italic Underline, Arial
     Gui, Main:Add, Text, x20 y%yPos% w150, Remarks
     
-    yPos += 24
     Gui, Main:Font, s10 Normal, Arial
+    yPos += 24
     Gui, Main:Add, Edit, x20 y%yPos% w500 h100 Multi vtxtRemarks, %txtRemarks%
     
     ; ===========================================================================
@@ -537,7 +523,8 @@ BuildReferralForm()
     Gui, Main:Add, Button, x20 y%yPos% w100 h35 gBtnClearForm, Clear Form
     Gui, Main:Add, Button, x400 y%yPos% w120 h35 gBtnSubmit Default, Submit Referral
     
-    ; Calculate window height
+    ; Calculate window height (buttons are at yPos with height 35, so bottom is yPos + 35)
+    ; Add minimal padding (15 pixels) below buttons
     winHeight := yPos + 50
     
     ; Show the GUI
@@ -550,7 +537,7 @@ BuildReferralForm()
 #Include %A_ScriptDir%\..\Lib\FormHandlers.ahk
 ```
 
-### Example 3: Hillsboro OMFS (Complex Form - 216 lines, ~23% smaller!)
+### Example 3: Hillsboro OMFS (Complex Form)
 
 ```ahk
 ; ==============================================================================
@@ -606,17 +593,8 @@ global chkOralPathology := 0
 global chkSoftTissueGrafting := 0
 global chkSkinLesions := 0
 
-; Radiograph Requests
-global chkEnclosedEmailed := 0
-global chkGivenToPatient := 0
-global chkTakeNewOnes := 0
-
 ; Management Notes
 global txtManagementNotes := ""
-
-; Who Calls
-global chkPleaseCallPatient := 0
-global chkPatientWillCall := 1
 
 ; ==============================================================================
 ; Build the GUI
@@ -631,8 +609,8 @@ BuildReferralForm()
     specialistName := PS_GetSpecialistName()
     windowTitle := "Referral - " . specialistName
     
-    ; Set GUI defaults
-    Gui, Main:New, +Resize +MinSize500x600, %windowTitle%
+    ; Set GUI defaults (non-resizable, size calculated at end)
+    Gui, Main:New, , %windowTitle%
     Gui, Main:Color, FFFFFF
     Gui, Main:Font, s11, Arial
     
@@ -642,17 +620,14 @@ BuildReferralForm()
     FT_BuildHeader(yPos, formWidth)
     
     ; ===========================================================================
-    ; Who Calls (on same row)
-    ; ===========================================================================
-    Gui, Main:Add, CheckBox, x20 y%yPos% w150 h22 vchkPleaseCallPatient, Please call patient
-    Gui, Main:Add, CheckBox, x200 y%yPos% w230 h22 vchkPatientWillCall Checked, Patient will call for appointment
-    
-    ; ===========================================================================
     ; Teeth / Area to be Treated
     ; ===========================================================================
-    yPos += 30
-    Gui, Main:Add, Text, x20 y%yPos% w170 h22 +0x200, Teeth # or area to be treated:
-    Gui, Main:Add, Edit, x195 y%yPos% w385 h22 vTeethAreaToTreat, %TeethAreaToTreat%
+    Gui, Main:Font, s10 Bold Italic Underline, Arial
+    Gui, Main:Add, Text, x20 y%yPos% w250, Teeth # or area to be treated:
+    
+    Gui, Main:Font, s11 Normal, Arial
+    yPos += 22
+    Gui, Main:Add, Edit, x20 y%yPos% w560 h22 vTeethAreaToTreat, %TeethAreaToTreat%
     
     ; Separator
     yPos += 30
@@ -701,7 +676,6 @@ BuildReferralForm()
     
     Gui, Main:Font, s10 Normal, Arial
     yPos += 22
-    
     Gui, Main:Add, CheckBox, x20 y%yPos% w150 vchkDentalImplants, Dental implants
     Gui, Main:Add, CheckBox, x%colRight% y%yPos% w150 vchkOralPathology, Oral Pathology
     
@@ -719,22 +693,6 @@ BuildReferralForm()
     yPos += 22
     Gui, Main:Add, CheckBox, x20 y%yPos% w55 vchkConsultOther, Other:
     Gui, Main:Add, Edit, x80 y%yPos% w280 h22 vtxtConsultOther, %txtConsultOther%
-    
-    ; ===========================================================================
-    ; Radiograph Requests
-    ; ===========================================================================
-    yPos += 35
-    Gui, Main:Add, Text, x20 y%yPos% w580 h2 +0x10
-    
-    yPos += 8
-    Gui, Main:Font, s10 Bold Italic Underline, Arial
-    Gui, Main:Add, Text, x20 y%yPos% w150, Radiograph Requests
-    
-    Gui, Main:Font, s10 Normal, Arial
-    yPos += 22
-    Gui, Main:Add, CheckBox, x20 y%yPos% w150 vchkEnclosedEmailed, Enclosed/Emailed
-    Gui, Main:Add, CheckBox, x200 y%yPos% w150 vchkGivenToPatient, Given to patient
-    Gui, Main:Add, CheckBox, x%colRight% y%yPos% w180 vchkTakeNewOnes, Please take new ones
     
     ; ===========================================================================
     ; Management, Medical or Treatment Concerns
@@ -761,8 +719,12 @@ BuildReferralForm()
     Gui, Main:Add, Button, x20 y%yPos% w100 h35 gBtnClearForm, Clear Form
     Gui, Main:Add, Button, x460 y%yPos% w140 h35 gBtnSubmit Default, Submit Referral
     
+    ; Calculate window height (buttons are at yPos with height 35, so bottom is yPos + 35)
+    ; Add minimal padding (15 pixels) below buttons
+    winHeight := yPos + 50
+    
     ; Show the GUI
-    Gui, Main:Show, w620 h750
+    Gui, Main:Show, w620 h%winHeight%
 }
 
 ; ==============================================================================
@@ -871,25 +833,23 @@ AutoHotkeyU64.exe LauncherDynamic.ahk
 powershell -ExecutionPolicy Bypass -File Build.ps1
 ```
 
-**Update Build.ps1 if needed:**
-```powershell
-# Add your form name to this array
-$forms = @("Farham", "HillsboroOMFS", "NorthwestPerio", "YourNewForm")
-```
+`Build.ps1` auto-discovers all `.ahk` files in `Forms/` via `Get-ChildItem` — no manual edits needed when adding new forms.
 
 ---
 
 ## Critical Rules Summary
 
 ### ✅ DO:
-- Include ALL required headers (SPECIALIST_NAME, FORM_NAME)
+- Include ALL required headers (SPECIALIST_NAME, FORM_NAME, WINDOW_TITLE)
 - Match SPECIALIST_NAME to Open Dental exactly
+- Set WINDOW_TITLE to `Referral - [SPECIALIST_NAME]` (used by ScreenshotHelper)
 - Use consistent variable naming across script
 - Include `#Include %A_ScriptDir%\..\Lib\FormTransfer.ahk`
-- Call `FT_BuildHeader(yPos, formWidth)` to build header section
+- Call `FT_BuildHeader(yPos, formWidth)` to build header section (sets +AlwaysOnTop)
 - Call `InitPresets()` after building GUI
 - Include `#Include %A_ScriptDir%\..\Lib\FormHandlers.ahk` at end of form
 - Use window title format: `"Referral - " . SPECIALIST_NAME`
+- Use non-resizable windows: `Gui, Main:New, , %windowTitle%`
 - Use Clear Form and Submit Referral buttons
 
 ### ❌ DON'T:
@@ -908,7 +868,7 @@ $forms = @("Farham", "HillsboroOMFS", "NorthwestPerio", "YourNewForm")
 ## Troubleshooting
 
 **Form doesn't appear in LauncherDynamic:**
-- Check DISPLAY_NAME is present in header
+- Check SPECIALIST_NAME is present in header
 - Verify FORM_NAME is set
 - Restart launcher
 
@@ -933,7 +893,7 @@ Project Root/
 ├── Forms/
 │   └── YourNewForm.ahk         ← Your new form
 ├── Lib/
-│   ├── FormTransfer.ahk        ← Don't edit (includes header builder)
+│   ├── FormTransfer.ahk        ← Don't edit (includes header builder, +AlwaysOnTop)
 │   ├── FormHandlers.ahk        ← Don't edit (standard button handlers)
 │   ├── ODAutomation.ahk        ← Don't edit
 │   └── Logging.ahk             ← Don't edit
@@ -941,9 +901,11 @@ Project Root/
 │   ├── Mappings.ini            ← Generated by CoordHelper
 │   └── Presets.ini             ← Generated by Ctrl+Shift+S
 ├── Tools/
-│   └── CoordHelper.ahk         ← Run after creating form
+│   ├── CoordHelper.ahk         ← Run after creating form
+│   └── ScreenshotHelper.ahk    ← Reads WINDOW_TITLE for screenshots
 ├── LauncherDynamic.ahk         ← Auto-discovers forms
-└── Build.ps1                   ← Compile to EXE
+├── Build.ps1                   ← Compile to EXE (auto-discovers forms)
+└── Deploy.ps1                  ← Deploy to network share
 ```
 
 ---

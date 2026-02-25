@@ -3,6 +3,7 @@
 ; Based on Open Dental Sheet XML Export
 ; SPECIALIST_NAME: OS - Hillsboro OMFS
 ; FORM_NAME: HillsboroOMFS
+; WINDOW_TITLE: Referral - OS - Hillsboro OMFS
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force

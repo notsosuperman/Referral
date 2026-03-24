@@ -28,6 +28,14 @@ global WinX, WinY, WinW, WinH  ; Fill Sheet window position
 CoordMode, Mouse, Client
 CoordMode, ToolTip, Screen
 
+; Safety net: always release BlockInput on exit
+OnExit("ReleaseBlockInput")
+ReleaseBlockInput()
+{
+    BlockInput, Off
+    BlockInput, MouseMoveOff
+}
+
 ; ==============================================================================
 ; Auto-Execute Section
 ; ==============================================================================
@@ -149,6 +157,7 @@ F1::
 return
 
 Escape::
+    BlockInputOff()
     IsCapturing := false
     ; Only turn off click hotkey if it was registered
     if (ClickHotkeyRegistered)

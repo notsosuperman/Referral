@@ -744,7 +744,7 @@ BuildNormalGUI(forms, hasAdditional := false)
     }
 
     ; Exit button
-    Gui, Launcher:Font, s10, Arial
+    Gui, Launcher:Font, s10 Normal, Arial
     Gui, Launcher:Add, Button, x20 y%yPos% w320 h30 gLauncherGuiClose, Exit
 
     ; Calculate window height

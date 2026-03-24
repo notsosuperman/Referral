@@ -4,6 +4,7 @@
 ; SPECIALIST_NAME: Perio - Northwest Periodontics
 ; FORM_NAME: NorthwestPerio
 ; WINDOW_TITLE: Referral - Perio - Northwest Periodontics
+; TIER: additional
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force

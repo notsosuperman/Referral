@@ -4,6 +4,7 @@
 ; SPECIALIST_NAME: OS - Hillsboro OMFS
 ; FORM_NAME: HillsboroOMFS
 ; WINDOW_TITLE: Referral - OS - Hillsboro OMFS
+; TIER: additional
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force

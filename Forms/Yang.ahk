@@ -1,9 +1,9 @@
 ; ==============================================================================
 ; Yang Referral Slip - AHK v1
 ; Based on Open Dental Sheet XML Export
-; SPECIALIST_NAME: Perio - Wolfe Dental Cedar Mill
+; SPECIALIST_NAME: Perio - Dr. Yang (Wolfe Dental - Cedar Mill)
 ; FORM_NAME: Yang
-; WINDOW_TITLE: Referral - Perio - Wolfe Dental Cedar Mill
+; WINDOW_TITLE: Referral - Perio - Dr. Yang (Wolfe Dental - Cedar Mill)
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force

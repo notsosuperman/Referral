@@ -4,6 +4,7 @@
 ; SPECIALIST_NAME: Endo - Advanced Endo
 ; FORM_NAME: AdvancedEndo
 ; WINDOW_TITLE: Referral - Endo - Advanced Endo
+; TIER: additional
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force

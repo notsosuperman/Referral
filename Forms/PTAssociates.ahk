@@ -1,9 +1,9 @@
 ; ==============================================================================
 ; PT Associates Referral Slip - AHK v1
 ; Based on Open Dental Sheet XML Export
-; SPECIALIST_NAME: TMJ - PT Associates
+; SPECIALIST_NAME: TMJ - Aimee Jackson (Therapeutic Associates)
 ; FORM_NAME: PTAssociates
-; WINDOW_TITLE: Referral - TMJ - PT Associates
+; WINDOW_TITLE: Referral - TMJ - Aimee Jackson (Therapeutic Associates)
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force

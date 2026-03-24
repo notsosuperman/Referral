@@ -4,6 +4,7 @@
 ; SPECIALIST_NAME: Perio - Oregon Periodontics
 ; FORM_NAME: OregonPeriodontics
 ; WINDOW_TITLE: Referral - Perio - Oregon Periodontics
+; TIER: additional
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force

@@ -18,6 +18,9 @@ global ButtonMap := {}  ; Maps button text → {path, preset}
 global PresetPath := A_ScriptDir . "\Config\Presets.ini"
 global MappingPath := A_ScriptDir . "\Config\Mappings.ini"
 
+; Tier Navigation
+global ShowingAdditional := false  ; Which tier is currently displayed
+
 ; Developer Mode
 global DevModeActive := false
 global DevForms := []           ; Stores form data for dev mode
@@ -186,33 +189,41 @@ DiscoverForms()
 ; Parse form header metadata
 ParseFormHeader(filePath)
 {
-    formData := {name: "", display: ""}
-    
+    formData := {name: "", display: "", tier: "main"}
+
     ; Read first 30 lines
     FileRead, content, %filePath%
     if (ErrorLevel)
         return formData
-    
+
     lines := StrSplit(content, "`n", "`r", 30)
-    
+
     for index, line in lines
     {
         if (index > 30)
             break
-        
+
         ; Extract FORM_NAME
         if (RegExMatch(line, "i)^\s*;\s*FORM_NAME:\s*(.+)", match))
         {
             formData.name := Trim(match1)
         }
-        
+
         ; Extract SPECIALIST_NAME (used for button text)
         if (RegExMatch(line, "i)^\s*;\s*SPECIALIST_NAME:\s*(.+)", match))
         {
             formData.display := Trim(match1)
         }
+
+        ; Extract TIER (defaults to "main" if not present)
+        if (RegExMatch(line, "i)^\s*;\s*TIER:\s*(.+)", match))
+        {
+            tierValue := Trim(match1)
+            if (tierValue = "additional")
+                formData.tier := "additional"
+        }
     }
-    
+
     ; SPECIALIST_NAME is required
     if (formData.display = "")
     {
@@ -220,7 +231,7 @@ ParseFormHeader(filePath)
         formData.name := ""
         return formData
     }
-    
+
     return formData
 }
 
@@ -569,6 +580,34 @@ MapAllUnmapped()
     ShowLauncherGUI(true)
 }
 
+; Toggle a form's tier between main and additional by editing its .ahk header
+ToggleFormTier(formPath, currentTier)
+{
+    FileRead, content, %formPath%
+    if (ErrorLevel)
+    {
+        MsgBox, 16, Error, Failed to read: %formPath%
+        return
+    }
+
+    if (currentTier = "additional")
+    {
+        ; Remove the TIER line to make it main (default)
+        content := RegExReplace(content, "m)^\s*;\s*TIER:\s*additional\s*\r?\n", "")
+    }
+    else
+    {
+        ; Insert TIER: additional after WINDOW_TITLE line
+        content := RegExReplace(content, "(;\s*WINDOW_TITLE:[^\r\n]+\r?\n)", "$1; TIER: additional`n")
+    }
+
+    FileDelete, %formPath%
+    FileAppend, %content%, %formPath%
+
+    ; Refresh the dev mode GUI
+    ShowLauncherGUI(true)
+}
+
 ; ==============================================================================
 ; Dynamic GUI Building
 ; ==============================================================================
@@ -589,67 +628,91 @@ ShowLauncherGUI(devMode := false)
     presetMap := DiscoverPresets()
     forms := MergeAndSortForms(forms, presetMap)
     
-    ; Store for dev mode use
+    ; Store all forms for dev mode use
     DevForms := forms
-    
+
     if (devMode)
     {
         ; Check mapping status for all forms
         MappingStatuses := {}
         for index, form in forms
             MappingStatuses[form.name] := CheckMappingStatus(form.name)
-        
-        ; Build dev mode GUI
+
+        ; Build dev mode GUI (shows all forms, no filtering)
         BuildDevModeGUI(forms)
     }
     else
     {
-        ; Build normal GUI
-        BuildNormalGUI(forms)
+        ; Filter forms by current tier
+        filteredForms := []
+        targetTier := ShowingAdditional ? "additional" : "main"
+        hasAdditional := false
+        for index, form in forms
+        {
+            if (form.tier = targetTier)
+                filteredForms.Push(form)
+            if (form.tier = "additional")
+                hasAdditional := true
+        }
+
+        ; Build normal GUI with filtered forms
+        BuildNormalGUI(filteredForms, hasAdditional)
     }
 }
 
 ; Build normal user GUI
-BuildNormalGUI(forms)
+BuildNormalGUI(forms, hasAdditional := false)
 {
     global LauncherPatientName
     global ButtonMap
-    
+    global ShowingAdditional
+
     ButtonMap := {}
-    
+
+    ; Window title changes based on tier
+    winTitle := ShowingAdditional ? "Dental Referral System - Additional" : "Dental Referral System"
+
     ; Build GUI
-    Gui, Launcher:New, , Dental Referral System
+    Gui, Launcher:New, , %winTitle%
     Gui, Launcher:Color, FFFFFF
     Gui, Launcher:Font, s14 Bold, Arial
-    
+
     ; Header
-    Gui, Launcher:Add, Text, x20 y15 w260 h30 cNavy Center, Dental Referral System
-    
+    Gui, Launcher:Add, Text, x20 y15 w320 h30 cNavy Center, Dental Referral System
+
     ; Patient name display (if captured)
     yPos := 50
     if (LauncherPatientName != "")
     {
         Gui, Launcher:Font, s10 Normal, Arial
-        Gui, Launcher:Add, Text, x20 y%yPos% w260 h20 Center cGreen, Patient: %LauncherPatientName%
+        Gui, Launcher:Add, Text, x20 y%yPos% w320 h20 Center cGreen, Patient: %LauncherPatientName%
         yPos += 25
     }
-    
+
     ; Separator
-    Gui, Launcher:Add, Text, x20 y%yPos% w260 h2 +0x10
+    Gui, Launcher:Add, Text, x20 y%yPos% w320 h2 +0x10
     yPos += 10
-    
+
+    ; Back button at top if showing additional
+    if (ShowingAdditional)
+    {
+        Gui, Launcher:Font, s9 Normal, Arial
+        Gui, Launcher:Add, Button, x20 y%yPos% w320 h28 gShowMainTier, << Back to Main
+        yPos += 35
+    }
+
     ; Dynamically create buttons for each form
     for index, form in forms
     {
         ; Main form button
         Gui, Launcher:Font, s11 Bold, Arial
         buttonText := form.display
-        Gui, Launcher:Add, Button, x20 y%yPos% w260 h40 gHandleButtonClick, %buttonText%
-        
+        Gui, Launcher:Add, Button, x20 y%yPos% w320 h40 gHandleButtonClick, %buttonText%
+
         ; Store in ButtonMap
         ButtonMap[buttonText] := {path: form.path, preset: ""}
         yPos += 45
-        
+
         ; Preset buttons (if any)
         if (form.presets.Length() > 0)
         {
@@ -657,30 +720,38 @@ BuildNormalGUI(forms)
             for pIndex, presetName in form.presets
             {
                 buttonText := "  > " . presetName
-                Gui, Launcher:Add, Button, x40 y%yPos% w240 h28 gHandleButtonClick, %buttonText%
-                
+                Gui, Launcher:Add, Button, x40 y%yPos% w300 h28 gHandleButtonClick, %buttonText%
+
                 ; Store in ButtonMap
                 ButtonMap[buttonText] := {path: form.path, preset: presetName}
                 yPos += 33
             }
-            
+
             yPos += 5  ; Extra spacing after presets
         }
     }
-    
+
     ; Separator
-    Gui, Launcher:Add, Text, x20 y%yPos% w260 h2 +0x10
+    Gui, Launcher:Add, Text, x20 y%yPos% w320 h2 +0x10
     yPos += 15
-    
+
+    ; Additional Specialists button (only on main view, only if additional forms exist)
+    if (!ShowingAdditional && hasAdditional)
+    {
+        Gui, Launcher:Font, s9 Normal, Arial
+        Gui, Launcher:Add, Button, x20 y%yPos% w320 h28 gShowAdditionalTier, Additional Specialists >>
+        yPos += 38
+    }
+
     ; Exit button
     Gui, Launcher:Font, s10, Arial
-    Gui, Launcher:Add, Button, x20 y%yPos% w260 h30 gLauncherGuiClose, Exit
-    
+    Gui, Launcher:Add, Button, x20 y%yPos% w320 h30 gLauncherGuiClose, Exit
+
     ; Calculate window height
     winHeight := yPos + 50
-    
+
     ; Show the GUI
-    Gui, Launcher:Show, w300 h%winHeight%
+    Gui, Launcher:Show, w360 h%winHeight%
 }
 
 ; Build developer mode GUI
@@ -715,38 +786,59 @@ BuildDevModeGUI(forms)
     {
         status := MappingStatuses[form.name]
         formName := form.name
-        
-        ; Form name with number and status on same line
+
+        ; Form name with number and tier tag on same line
         Gui, Launcher:Font, s10 Bold, Arial
         formDisplayText := index . ". " . form.display
         Gui, Launcher:Add, Text, x20 y%yPos% w300, %formDisplayText%
-        
-        ; Status indicator
+
+        ; Tier tag
+        if (form.tier = "additional")
+        {
+            Gui, Launcher:Font, s8 Normal Italic, Arial
+            Gui, Launcher:Add, Text, x330 y%yPos% w80 cGray, [Additional]
+        }
+        else
+        {
+            Gui, Launcher:Font, s8 Normal Italic, Arial
+            Gui, Launcher:Add, Text, x330 y%yPos% w80 cTeal, [Main]
+        }
+
+        ; Status indicator (shifted right to make room for tier tag)
         if (status.exists)
         {
             statusText := "Mapped (" . status.fieldCount . " fields)"
             Gui, Launcher:Font, s9 Normal, Arial
-            Gui, Launcher:Add, Text, x330 y%yPos% w150 cGreen, % statusText
+            Gui, Launcher:Add, Text, x415 y%yPos% w140 cGreen, % statusText
         }
         else
         {
             Gui, Launcher:Font, s9 Normal, Arial
-            Gui, Launcher:Add, Text, x330 y%yPos% w150 cRed, Not Mapped
+            Gui, Launcher:Add, Text, x415 y%yPos% w140 cRed, Not Mapped
         }
         yPos += 25
-        
+
         ; Map button with index prefix
         Gui, Launcher:Font, s8 Normal, Arial
         mapBtnText := index . ":Map"
         Gui, Launcher:Add, Button, x40 y%yPos% w55 h22 gDevBtnHandler, %mapBtnText%
         DevBtnActions[mapBtnText] := {action: "map", formName: formName, presetName: ""}
-        
+
         ; Delete Mapping button (only if mapped)
         if (status.exists)
         {
             delMapBtnText := index . ":Del"
             Gui, Launcher:Add, Button, x100 y%yPos% w45 h22 gDevBtnHandler, %delMapBtnText%
             DevBtnActions[delMapBtnText] := {action: "delmap", formName: formName, presetName: ""}
+        }
+
+        ; Tier toggle button (dev mode only, non-compiled)
+        if (!A_IsCompiled)
+        {
+            tierBtnText := index . ":Tier"
+            tierBtnX := status.exists ? 150 : 100
+            Gui, Launcher:Add, Button, x%tierBtnX% y%yPos% w55 h22 gDevBtnHandler, %tierBtnText%
+            DevBtnActions[tierBtnText] := {action: "toggletier", formName: formName, presetName: "", formPath: form.path, currentTier: form.tier}
         }
         yPos += 28
         
@@ -869,13 +961,32 @@ DevBtnHandler:
     {
         DeleteFormPreset(data.formName, data.presetName)
     }
+    else if (data.action = "toggletier")
+    {
+        ToggleFormTier(data.formPath, data.currentTier)
+    }
 return
 
 ; Exit Dev Mode button
 DevExitDevMode:
     global DevModeActive
+    global ShowingAdditional
     DevModeActive := false
+    ShowingAdditional := false  ; Reset to main tier when exiting dev mode
     ShowLauncherGUI(false)
+return
+
+; ==============================================================================
+; Tier Navigation Handlers
+; ==============================================================================
+ShowAdditionalTier:
+    ShowingAdditional := true
+    ShowLauncherGUI(DevModeActive)
+return
+
+ShowMainTier:
+    ShowingAdditional := false
+    ShowLauncherGUI(DevModeActive)
 return
 
 ; ==============================================================================

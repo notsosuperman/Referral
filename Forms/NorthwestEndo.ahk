@@ -4,6 +4,7 @@
 ; SPECIALIST_NAME: Endo - Northwest Endodontics
 ; FORM_NAME: NorthwestEndo
 ; WINDOW_TITLE: Referral - Endo - Northwest Endodontics
+; TIER: additional
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force

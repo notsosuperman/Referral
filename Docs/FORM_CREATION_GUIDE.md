@@ -54,6 +54,7 @@ Config/
 ; SPECIALIST_NAME: [Category] - [Full Practice Name]
 ; FORM_NAME: [CamelCaseFormName]
 ; WINDOW_TITLE: Referral - [Category] - [Full Practice Name]
+; TIER: [main|additional]          (optional - defaults to main if omitted)
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force
@@ -84,6 +85,14 @@ SetWorkingDir %A_ScriptDir%
 - Example: `Referral - Perio - Oregon Periodontics`
 - Used by `ScreenshotHelper.ahk` to detect and capture the form window
 - Always matches the title set programmatically by `BuildReferralForm()`
+
+**TIER:** *(optional)*
+- Controls which launcher view the form appears in
+- Values: `main` (default) or `additional`
+- Main tier: shown on the default launcher view (preferred specialists)
+- Additional tier: shown when user clicks "Additional Specialists >>"
+- Omit this line entirely for main-tier forms (it defaults to main)
+- Can be toggled in developer mode (Ctrl+Shift+D) via the `[Tier]` button
 
 ---
 

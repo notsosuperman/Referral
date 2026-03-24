@@ -1,9 +1,9 @@
 ; ==============================================================================
 ; Farham Referral Slip - AHK v1
 ; Based on Open Dental Sheet XML Export
-; SPECIALIST_NAME: Endo - Wolfe Dental Cedar Mill
+; SPECIALIST_NAME: Endo - Dr. Farham (Wolfe Dental - Cedar Mill)
 ; FORM_NAME: Farham
-; WINDOW_TITLE: Referral - Endo - Wolfe Dental Cedar Mill
+; WINDOW_TITLE: Referral - Endo - Dr. Farham (Wolfe Dental - Cedar Mill)
 ; ==============================================================================
 #NoEnv
 #SingleInstance, Force
